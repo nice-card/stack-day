@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+
+# Xcode
+DerivedData/
+.build/
+*.xcuserdata/
+*.xcuserstate
+
+# SwiftPM
+.swiftpm/
+
+# Node
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# env
+.env
+.env.*
+
+# logs
+*.log
