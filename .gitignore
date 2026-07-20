@@ -4,8 +4,8 @@
 # Xcode
 DerivedData/
 .build/
-*.xcuserdata/
-*.xcuserstate
+**/xcuserdata/
+**/*.xcuserstate
 
 # SwiftPM
 .swiftpm/
@@ -22,3 +22,6 @@ coverage/
 
 # logs
 *.log
+
+# Local agent skills
+.agents/skills/

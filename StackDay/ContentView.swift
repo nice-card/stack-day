@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  stack-day
+//  StackDay
 //
 //  Created by Kelly Dev on 6/29/26.
 //

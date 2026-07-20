@@ -1,1 +1,1 @@
-# stack-day
+# StackDay
