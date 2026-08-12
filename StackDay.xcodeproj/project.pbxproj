@@ -6,15 +6,41 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0DC0CAA6302D8B2F00DEF487 /* planning.md in Resources */ = {isa = PBXBuildFile; fileRef = 0DC0CAA2302D8B2F00DEF487 /* planning.md */; };
+		0DC0CAA7302D8B2F00DEF487 /* policies.md in Resources */ = {isa = PBXBuildFile; fileRef = 0DC0CAA3302D8B2F00DEF487 /* policies.md */; };
+		0DC0CAA8302D8B2F00DEF487 /* product.md in Resources */ = {isa = PBXBuildFile; fileRef = 0DC0CAA4302D8B2F00DEF487 /* product.md */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0DC0CAB1302D8DF000DEF487 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0D994EA62FF29B14004C44C0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0D994EAD2FF29B14004C44C0;
+			remoteInfo = StackDay;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		0D994EAE2FF29B14004C44C0 /* StackDay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StackDay.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0D994EBC2FF29F15004C44C0 /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
+		0DC0CAA2302D8B2F00DEF487 /* planning.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = planning.md; sourceTree = "<group>"; };
+		0DC0CAA3302D8B2F00DEF487 /* policies.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = policies.md; sourceTree = "<group>"; };
+		0DC0CAA4302D8B2F00DEF487 /* product.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = product.md; sourceTree = "<group>"; };
+		0DC0CAAD302D8DF000DEF487 /* StackDayTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StackDayTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0DC0CAC6302D921D00DEF487 /* StackDay.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = StackDay.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0D994EB02FF29B14004C44C0 /* StackDay */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = StackDay;
+			sourceTree = "<group>";
+		};
+		0DC0CAAE302D8DF000DEF487 /* Tests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Tests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -27,14 +53,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		0DC0CAAA302D8DF000DEF487 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0D994EA52FF29B14004C44C0 = {
 			isa = PBXGroup;
 			children = (
+				0DC0CAC6302D921D00DEF487 /* StackDay.xctestplan */,
+				0DC0CAA5302D8B2F00DEF487 /* docs */,
 				0D994EBC2FF29F15004C44C0 /* AGENTS.md */,
 				0D994EB02FF29B14004C44C0 /* StackDay */,
+				0DC0CAAE302D8DF000DEF487 /* Tests */,
 				0D994EAF2FF29B14004C44C0 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,8 +79,19 @@
 			isa = PBXGroup;
 			children = (
 				0D994EAE2FF29B14004C44C0 /* StackDay.app */,
+				0DC0CAAD302D8DF000DEF487 /* StackDayTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		0DC0CAA5302D8B2F00DEF487 /* docs */ = {
+			isa = PBXGroup;
+			children = (
+				0DC0CAA2302D8B2F00DEF487 /* planning.md */,
+				0DC0CAA3302D8B2F00DEF487 /* policies.md */,
+				0DC0CAA4302D8B2F00DEF487 /* product.md */,
+			);
+			path = docs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -72,6 +119,29 @@
 			productReference = 0D994EAE2FF29B14004C44C0 /* StackDay.app */;
 			productType = "com.apple.product-type.application";
 		};
+		0DC0CAAC302D8DF000DEF487 /* StackDayTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0DC0CAB3302D8DF000DEF487 /* Build configuration list for PBXNativeTarget "StackDayTests" */;
+			buildPhases = (
+				0DC0CAA9302D8DF000DEF487 /* Sources */,
+				0DC0CAAA302D8DF000DEF487 /* Frameworks */,
+				0DC0CAAB302D8DF000DEF487 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0DC0CAB2302D8DF000DEF487 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				0DC0CAAE302D8DF000DEF487 /* Tests */,
+			);
+			name = StackDayTests;
+			packageProductDependencies = (
+			);
+			productName = StackDayTests;
+			productReference = 0DC0CAAD302D8DF000DEF487 /* StackDayTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -79,11 +149,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2650;
+				LastSwiftUpdateCheck = 2660;
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					0D994EAD2FF29B14004C44C0 = {
 						CreatedOnToolsVersion = 26.5;
+					};
+					0DC0CAAC302D8DF000DEF487 = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = 0D994EAD2FF29B14004C44C0;
 					};
 				};
 			};
@@ -102,12 +176,23 @@
 			projectRoot = "";
 			targets = (
 				0D994EAD2FF29B14004C44C0 /* StackDay */,
+				0DC0CAAC302D8DF000DEF487 /* StackDayTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		0D994EAC2FF29B14004C44C0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0DC0CAA6302D8B2F00DEF487 /* planning.md in Resources */,
+				0DC0CAA7302D8B2F00DEF487 /* policies.md in Resources */,
+				0DC0CAA8302D8B2F00DEF487 /* product.md in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0DC0CAAB302D8DF000DEF487 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -124,7 +209,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		0DC0CAA9302D8DF000DEF487 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0DC0CAB2302D8DF000DEF487 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0D994EAD2FF29B14004C44C0 /* StackDay */;
+			targetProxy = 0DC0CAB1302D8DF000DEF487 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		0D994EB72FF29B15004C44C0 /* Debug */ = {
@@ -314,6 +414,50 @@
 			};
 			name = Release;
 		};
+		0DC0CAB4302D8DF000DEF487 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 393DQ3554J;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.niceCard.StackDayTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StackDay.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/StackDay";
+			};
+			name = Debug;
+		};
+		0DC0CAB5302D8DF000DEF487 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 393DQ3554J;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.niceCard.StackDayTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StackDay.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/StackDay";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -331,6 +475,15 @@
 			buildConfigurations = (
 				0D994EBA2FF29B15004C44C0 /* Debug */,
 				0D994EBB2FF29B15004C44C0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0DC0CAB3302D8DF000DEF487 /* Build configuration list for PBXNativeTarget "StackDayTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0DC0CAB4302D8DF000DEF487 /* Debug */,
+				0DC0CAB5302D8DF000DEF487 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
