@@ -43,10 +43,28 @@ struct Habit: Equatable {
         archivedOn = date
         updatedAt = date
     }
+    
+    func validateDate(_ targetDate: Date, referenceDate: Date) throws {
+        guard targetDate >= startedOn else {
+            throw HabitDateError.beforeHabitStart
+        }
+        guard targetDate <= referenceDate else {
+            throw HabitDateError.futureDate
+        }
+        if let archivedOn, targetDate > archivedOn {
+            throw HabitDateError.afterHabitArchived
+        }
+    }
 }
 
 enum HabitError: Error, Equatable {
     case emptyName
     case archiveBeforeStart
     case alreadyArchived
+}
+
+enum HabitDateError: Error, Equatable {
+    case beforeHabitStart
+    case futureDate
+    case afterHabitArchived
 }

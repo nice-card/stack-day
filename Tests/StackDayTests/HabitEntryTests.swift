@@ -59,49 +59,6 @@ struct HabitEntryTests {
         #expect(entry.state == .missed)
     }
 
-    @Test("rejects entries before the habit starts")
-    func rejectsDateBeforeHabitStart() throws {
-        let habit = try makeHabit()
-
-        #expect(throws: HabitEntryError.beforeHabitStart) {
-            try HabitEntry(
-                habit: habit,
-                targetDate: startDate.addingTimeInterval(-86_400),
-                completion: nil,
-                referenceDate: referenceDate
-            )
-        }
-    }
-
-    @Test("rejects entries after the reference date")
-    func rejectsFutureDate() throws {
-        let habit = try makeHabit()
-
-        #expect(throws: HabitEntryError.futureDate) {
-            try HabitEntry(
-                habit: habit,
-                targetDate: referenceDate.addingTimeInterval(86_400),
-                completion: nil,
-                referenceDate: referenceDate
-            )
-        }
-    }
-
-    @Test("rejects entries after an archived habit's inclusive final date")
-    func rejectsDateAfterArchive() throws {
-        let archivedOn = referenceDate.addingTimeInterval(-86_400)
-        let habit = try makeHabit(archivedOn: archivedOn)
-
-        #expect(throws: HabitEntryError.afterHabitArchived) {
-            try HabitEntry(
-                habit: habit,
-                targetDate: referenceDate,
-                completion: nil,
-                referenceDate: referenceDate
-            )
-        }
-    }
-
     @Test("allows an entry on the archived habit's final tracking date")
     func allowsArchiveDate() throws {
         let archivedOn = referenceDate.addingTimeInterval(-86_400)
@@ -116,7 +73,7 @@ struct HabitEntryTests {
 
         #expect(entry.state == .missed)
     }
-
+    
     private func makeHabit(archivedOn: Date? = nil) throws -> Habit {
         try Habit(
             name: "Read",

@@ -65,4 +65,73 @@ struct HabitTests {
             try habit.archive(on: archivedOn.addingTimeInterval(86_400))
         }
     }
+    
+    @Test("rejects dates before the habit starts")
+    func rejectsDateBeforeHabitStart() throws {
+        let habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            createdAt: createdAt
+        )
+
+        #expect(throws: HabitDateError.beforeHabitStart) {
+            try habit.validateDate(
+                startedOn.addingTimeInterval(-86_400),
+                referenceDate: startedOn
+            )
+        }
+    }
+
+    @Test("rejects dates after the reference date")
+    func rejectsFutureDate() throws {
+        let habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            createdAt: createdAt
+        )
+        let referenceDate = startedOn.addingTimeInterval(86_400)
+
+        #expect(throws: HabitDateError.futureDate) {
+            try habit.validateDate(
+                referenceDate.addingTimeInterval(86_400),
+                referenceDate: referenceDate
+            )
+        }
+    }
+
+    @Test("rejects dates after the habit is archived")
+    func rejectsDateAfterArchive() throws {
+        let archivedOn = startedOn.addingTimeInterval(86_400)
+        let habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            archivedOn: archivedOn,
+            createdAt: createdAt
+        )
+
+        #expect(throws: HabitDateError.afterHabitArchived) {
+            try habit.validateDate(
+                archivedOn.addingTimeInterval(86_400),
+                referenceDate: archivedOn.addingTimeInterval(86_400)
+            )
+        }
+    }
+
+    @Test("allows the archived date as the final valid date")
+    func allowsArchiveDate() throws {
+        let archivedOn = startedOn.addingTimeInterval(86_400)
+        let habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            archivedOn: archivedOn,
+            createdAt: createdAt
+        )
+
+        #expect(throws: Never.self) {
+            try habit.validateDate(
+                archivedOn,
+                referenceDate: archivedOn
+            )
+        }
+    }
 }

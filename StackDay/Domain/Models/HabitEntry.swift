@@ -22,15 +22,7 @@ struct HabitEntry: Equatable {
         completion: Completion?,
         referenceDate: Date
     ) throws {
-        guard targetDate >= habit.startedOn else {
-            throw HabitEntryError.beforeHabitStart
-        }
-        guard targetDate <= referenceDate else {
-            throw HabitEntryError.futureDate
-        }
-        if let archivedOn = habit.archivedOn, targetDate > archivedOn {
-            throw HabitEntryError.afterHabitArchived
-        }
+        try habit.validateDate(targetDate, referenceDate: referenceDate)
 
         habitID = habit.id
         self.targetDate = targetDate
@@ -43,10 +35,4 @@ struct HabitEntry: Equatable {
             state = .missed
         }
     }
-}
-
-enum HabitEntryError: Error, Equatable {
-    case beforeHabitStart
-    case futureDate
-    case afterHabitArchived
 }
