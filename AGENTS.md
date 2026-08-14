@@ -31,3 +31,12 @@ Read the relevant document before changing product behavior:
 - Keep changes scoped.
 - Add behavior-focused tests for behavior changes.
 - Build and test after changes.
+
+## Completion
+
+After completing a task:
+
+- Summarize what was implemented or changed.
+- Mention important implementation decisions or tradeoffs.
+- Report build and test results.
+- Note any remaining issues or follow-up work.
