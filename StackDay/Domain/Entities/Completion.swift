@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Completion: Equatable {
+struct Completion: Equatable, Identifiable {
     let id: UUID
     let habitID: UUID
     let completedOn: Date

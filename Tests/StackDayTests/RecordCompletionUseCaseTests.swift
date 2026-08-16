@@ -99,19 +99,26 @@ struct RecordCompletionUseCaseTests {
         private var stored: [Completion]
         private(set) var inserted: [Completion] = []
 
-        init(completions: [Completion] = []) { stored = completions }
-
+        init(completions: [Completion] = []) {
+            stored = completions
+        }
         func fetchAll(for habitID: Habit.ID) async throws -> [Completion] {
             stored.filter { $0.habitID == habitID }
         }
-        func fetch(habitID: Habit.ID, completedOn date: Date) async throws -> Completion? {
-            stored.first { $0.habitID == habitID && $0.completedOn == date }
+        func fetch(
+            habitID: Habit.ID,
+            completedOn date: Date
+        ) async throws -> Completion? {
+            stored.first {
+                $0.habitID == habitID &&
+                $0.completedOn == date
+            }
         }
         func insert(_ completion: Completion) async throws {
             inserted.append(completion)
         }
-        func delete(habitID: Habit.ID, completedOn date: Date) async throws {
-            stored.removeAll { $0.habitID == habitID && $0.completedOn == date }
+        func delete(id completionID: Completion.ID) async throws {
+            stored.removeAll { $0.id == completionID }
         }
         func deleteAll(for habitID: Habit.ID) async throws {
             stored.removeAll { $0.habitID == habitID }
