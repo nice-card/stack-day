@@ -85,43 +85,4 @@ struct RecordCompletionUseCaseTests {
         try Habit(name: "Read", startedOn: startedOn, createdAt: startedOn)
     }
 
-    private actor RecordingHabitRepository: HabitRepository {
-        var habits: [Habit]
-        init(habits: [Habit] = []) { self.habits = habits }
-        func fetchAll() async throws -> [Habit] { habits }
-        func fetch(id: Habit.ID) async throws -> Habit? { habits.first { $0.id == id } }
-        func insert(_ habit: Habit) async throws { habits.append(habit) }
-        func update(_ habit: Habit) async throws { habits = habits.map { $0.id == habit.id ? habit : $0 } }
-        func delete(id: Habit.ID) async throws { habits.removeAll { $0.id == id } }
-    }
-
-    private actor RecordingCompletionRepository: CompletionRepository {
-        private var stored: [Completion]
-        private(set) var inserted: [Completion] = []
-
-        init(completions: [Completion] = []) {
-            stored = completions
-        }
-        func fetchAll(for habitID: Habit.ID) async throws -> [Completion] {
-            stored.filter { $0.habitID == habitID }
-        }
-        func fetch(
-            habitID: Habit.ID,
-            completedOn date: Date
-        ) async throws -> Completion? {
-            stored.first {
-                $0.habitID == habitID &&
-                $0.completedOn == date
-            }
-        }
-        func insert(_ completion: Completion) async throws {
-            inserted.append(completion)
-        }
-        func delete(id completionID: Completion.ID) async throws {
-            stored.removeAll { $0.id == completionID }
-        }
-        func deleteAll(for habitID: Habit.ID) async throws {
-            stored.removeAll { $0.habitID == habitID }
-        }
-    }
 }

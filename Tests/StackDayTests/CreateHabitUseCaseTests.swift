@@ -36,21 +36,4 @@ struct CreateHabitUseCaseTests {
         #expect(await repository.inserted.isEmpty)
     }
 
-    private actor RecordingHabitRepository: HabitRepository {
-        private(set) var inserted: [Habit] = []
-        
-        func fetchAll() async throws -> [Habit] { inserted }
-        func fetch(id: Habit.ID) async throws -> Habit? { inserted.first { $0.id == id } }
-        func insert(_ habit: Habit) async throws {
-            inserted.append(habit)
-        }
-        func update(_ habit: Habit) async throws {
-            if let index = inserted.firstIndex(where: { $0.id == habit.id }) {
-                inserted[index] = habit
-            }
-        }
-        func delete(id: Habit.ID) async throws {
-            inserted.removeAll { $0.id == id }
-        }
-    }
 }
