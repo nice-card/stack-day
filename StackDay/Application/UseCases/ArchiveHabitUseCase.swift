@@ -7,11 +7,13 @@ import Foundation
 
 struct ArchiveHabitUseCase {
     private let repository: any HabitRepository
-    private let now: () -> Date
+    private let clock: any Clock
+    private let timeZone: TimeZone
 
-    init(repository: any HabitRepository, now: @escaping () -> Date = Date.init) {
+    init(repository: any HabitRepository, clock: any Clock = SystemClock(), timeZone: TimeZone = .current) {
         self.repository = repository
-        self.now = now
+        self.clock = clock
+        self.timeZone = timeZone
     }
 
     func execute(habitID: Habit.ID) async throws -> Habit {
@@ -19,7 +21,8 @@ struct ArchiveHabitUseCase {
             throw ArchiveHabitError.habitNotFound
         }
 
-        try habit.archive(on: now())
+        let now = clock.now
+        try habit.archive(on: try LocalDay(date: now, timeZone: timeZone), updatedAt: now)
         try await repository.update(habit)
         return habit
     }

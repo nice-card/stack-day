@@ -13,23 +13,23 @@ struct HabitEntry: Equatable {
     }
 
     let habitID: UUID
-    let targetDate: Date
+    let targetDay: LocalDay
     let state: State
 
     init(
         habit: Habit,
-        targetDate: Date,
+        targetDay: LocalDay,
         completion: Completion?,
-        referenceDate: Date
+        referenceDay: LocalDay
     ) throws {
-        try habit.validateDate(targetDate, referenceDate: referenceDate)
+        try habit.validateDate(targetDay, referenceDay: referenceDay)
 
         habitID = habit.id
-        self.targetDate = targetDate
+        self.targetDay = targetDay
 
         if completion != nil {
             state = .completed
-        } else if targetDate == referenceDate {
+        } else if targetDay == referenceDay {
             state = .pending
         } else {
             state = .missed

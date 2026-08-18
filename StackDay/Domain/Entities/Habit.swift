@@ -8,16 +8,16 @@ import Foundation
 struct Habit: Equatable, Identifiable {
     let id: UUID
     let name: String
-    let startedOn: Date
-    private(set) var archivedOn: Date?
+    let startedOn: LocalDay
+    private(set) var archivedOn: LocalDay?
     let createdAt: Date
     private(set) var updatedAt: Date
 
     init(
         id: UUID = UUID(),
         name: String,
-        startedOn: Date,
-        archivedOn: Date? = nil,
+        startedOn: LocalDay,
+        archivedOn: LocalDay? = nil,
         createdAt: Date,
         updatedAt: Date? = nil
     ) throws {
@@ -34,21 +34,18 @@ struct Habit: Equatable, Identifiable {
         self.updatedAt = updatedAt ?? createdAt
     }
 
-    mutating func archive(on date: Date) throws {
+    mutating func archive(on day: LocalDay, updatedAt date: Date) throws {
         guard archivedOn == nil else { throw HabitError.alreadyArchived }
-        if date < startedOn {
-            throw HabitError.archiveBeforeStart
-        }
-
-        archivedOn = date
+        if day < startedOn { throw HabitError.archiveBeforeStart }
+        archivedOn = day
         updatedAt = date
     }
     
-    func validateDate(_ targetDate: Date, referenceDate: Date) throws {
+    func validateDate(_ targetDate: LocalDay, referenceDay: LocalDay) throws {
         guard targetDate >= startedOn else {
             throw HabitDateError.beforeHabitStart
         }
-        guard targetDate <= referenceDate else {
+        guard targetDate <= referenceDay else {
             throw HabitDateError.futureDate
         }
         if let archivedOn, targetDate > archivedOn {

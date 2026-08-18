@@ -8,26 +8,34 @@ import Foundation
 struct CancelCompletionUseCase {
     private let habitRepository: any HabitRepository
     private let completionRepository: any CompletionRepository
-    private let now: () -> Date
+    private let clock: any Clock
+    private let timeZone: TimeZone
 
     init(
         habitRepository: any HabitRepository,
         completionRepository: any CompletionRepository,
-        now: @escaping () -> Date = Date.init
+        clock: any Clock = SystemClock(),
+        timeZone: TimeZone = .current
     ) {
         self.habitRepository = habitRepository
         self.completionRepository = completionRepository
-        self.now = now
+        self.clock = clock
+        self.timeZone = timeZone
     }
 
-    func execute(habitID: Habit.ID, completedOn: Date) async throws {
+    func execute(habitID: Habit.ID, completedOn: LocalDay) async throws {
         guard let habit = try await habitRepository.fetch(id: habitID) else {
             throw CancelCompletionError.habitNotFound
         }
-        
-        let referenceDate = now()
+
+        let now = clock.now
+        let referenceDay = try LocalDay(date: now, timeZone: timeZone)
+
         do {
-            try habit.validateDate(completedOn, referenceDate: referenceDate)
+            try habit.validateDate(
+                completedOn,
+                referenceDay: referenceDay
+            )
         } catch let error as HabitDateError {
             throw CancelCompletionError.invalidDate(error)
         }

@@ -10,13 +10,13 @@ import Foundation
 struct Completion: Equatable, Identifiable {
     let id: UUID
     let habitID: UUID
-    let completedOn: Date
+    let completedOn: LocalDay
     let recordedAt: Date
 
     init(
         id: UUID = UUID(),
         habitID: UUID,
-        completedOn: Date,
+        completedOn: LocalDay,
         recordedAt: Date
     ) {
         self.id = id

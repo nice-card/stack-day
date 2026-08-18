@@ -8,20 +8,21 @@ import Testing
 @testable import StackDay
 
 struct HabitStatisticsTests {
-    private var calendar: Calendar {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        return calendar
-    }
+    private let recordedAt = Date(timeIntervalSince1970: 0)
 
     @Test("calculates completed days, eligible days, and completion rate")
     func calculatesCompletionStatistics() throws {
-        let habit = try makeHabit(startedOn: date(2026, 1, 1))
-        let statistics = HabitStatisticsCalculator().calculate(
+        let startDay = try day(2026, 1, 1)
+        let referenceDay = try day(2026, 1, 3)
+        let habit = try makeHabit(startedOn: startDay)
+
+        let statistics = try HabitStatisticsCalculator().calculate(
             habit: habit,
-            completions: completions(for: habit, on: [date(2026, 1, 1), date(2026, 1, 3)]),
-            referenceDate: date(2026, 1, 3),
-            calendar: calendar
+            completions: completions(
+                for: habit,
+                on: [startDay, referenceDay]
+            ),
+            referenceDay: referenceDay
         )
 
         #expect(statistics.totalCompletedDays == 2)
@@ -31,12 +32,17 @@ struct HabitStatisticsTests {
 
     @Test("includes an incomplete reference day as eligible")
     func includesIncompleteReferenceDay() throws {
-        let habit = try makeHabit(startedOn: date(2026, 1, 1))
-        let statistics = HabitStatisticsCalculator().calculate(
+        let startDay = try day(2026, 1, 1)
+        let referenceDay = try day(2026, 1, 2)
+        let habit = try makeHabit(startedOn: startDay)
+
+        let statistics = try HabitStatisticsCalculator().calculate(
             habit: habit,
-            completions: completions(for: habit, on: [date(2026, 1, 1)]),
-            referenceDate: date(2026, 1, 2),
-            calendar: calendar
+            completions: completions(
+                for: habit,
+                on: [startDay]
+            ),
+            referenceDay: referenceDay
         )
 
         #expect(statistics.totalCompletedDays == 1)
@@ -46,14 +52,17 @@ struct HabitStatisticsTests {
 
     @Test("counts dates across month and year boundaries")
     func countsAcrossDateBoundaries() throws {
-        let habit = try makeHabit(startedOn: date(2025, 12, 31))
-        let statistics = HabitStatisticsCalculator().calculate(
+        let startDay = try day(2025, 12, 31)
+        let referenceDay = try day(2026, 1, 2)
+        let habit = try makeHabit(startedOn: startDay)
+
+        let statistics = try HabitStatisticsCalculator().calculate(
             habit: habit,
-            completions: completions(for: habit, on: [
-                date(2025, 12, 31), date(2026, 1, 2)
-            ]),
-            referenceDate: date(2026, 1, 2),
-            calendar: calendar
+            completions: completions(
+                for: habit,
+                on: [startDay, referenceDay]
+            ),
+            referenceDay: referenceDay
         )
 
         #expect(statistics.eligibleTrackingDays == 3)
@@ -63,15 +72,27 @@ struct HabitStatisticsTests {
 
     @Test("uses an archived habit's inclusive final tracking date")
     func usesArchivedFinalTrackingDate() throws {
-        let archiveDate = date(2026, 1, 2)
-        let habit = try makeHabit(startedOn: date(2026, 1, 1), archivedOn: archiveDate)
-        let statistics = HabitStatisticsCalculator().calculate(
+        let startDay = try day(2026, 1, 1)
+        let archiveDay = try day(2026, 1, 2)
+        let completionAfterArchive = try day(2026, 1, 3)
+        let referenceDay = try day(2026, 1, 4)
+
+        let habit = try makeHabit(
+            startedOn: startDay,
+            archivedOn: archiveDay
+        )
+
+        let statistics = try HabitStatisticsCalculator().calculate(
             habit: habit,
-            completions: completions(for: habit, on: [
-                date(2026, 1, 1), archiveDate, date(2026, 1, 3)
-            ]),
-            referenceDate: date(2026, 1, 4),
-            calendar: calendar
+            completions: completions(
+                for: habit,
+                on: [
+                    startDay,
+                    archiveDay,
+                    completionAfterArchive
+                ]
+            ),
+            referenceDay: referenceDay
         )
 
         #expect(statistics.eligibleTrackingDays == 2)
@@ -81,15 +102,21 @@ struct HabitStatisticsTests {
 
     @Test("calculates current and longest daily streaks")
     func calculatesCurrentAndLongestStreaks() throws {
-        let habit = try makeHabit(startedOn: date(2026, 1, 1))
-        let statistics = HabitStatisticsCalculator().calculate(
+        let day1 = try day(2026, 1, 1)
+        let day2 = try day(2026, 1, 2)
+        let day3 = try day(2026, 1, 3)
+        let day5 = try day(2026, 1, 5)
+        let day6 = try day(2026, 1, 6)
+
+        let habit = try makeHabit(startedOn: day1)
+
+        let statistics = try HabitStatisticsCalculator().calculate(
             habit: habit,
-            completions: completions(for: habit, on: [
-                date(2026, 1, 1), date(2026, 1, 2), date(2026, 1, 3),
-                date(2026, 1, 5), date(2026, 1, 6)
-            ]),
-            referenceDate: date(2026, 1, 6),
-            calendar: calendar
+            completions: completions(
+                for: habit,
+                on: [day1, day2, day3, day5, day6]
+            ),
+            referenceDay: day6
         )
 
         #expect(statistics.streak.current == 2)
@@ -98,90 +125,158 @@ struct HabitStatisticsTests {
 
     @Test("keeps the current streak when today is incomplete")
     func keepsCurrentStreakWhenTodayIsIncomplete() throws {
-        let habit = try makeHabit(startedOn: date(2026, 1, 1))
-        let statistics = HabitStatisticsCalculator().calculate(
+        let day1 = try day(2026, 1, 1)
+        let day2 = try day(2026, 1, 2)
+        let referenceDay = try day(2026, 1, 3)
+
+        let habit = try makeHabit(startedOn: day1)
+
+        let statistics = try HabitStatisticsCalculator().calculate(
             habit: habit,
-            completions: completions(for: habit, on: [date(2026, 1, 1), date(2026, 1, 2)]),
-            referenceDate: date(2026, 1, 3),
-            calendar: calendar
+            completions: completions(
+                for: habit,
+                on: [day1, day2]
+            ),
+            referenceDay: referenceDay
         )
 
-        #expect(statistics.streak == HabitStreak(current: 2, longest: 2))
+        #expect(
+            statistics.streak == HabitStreak(
+                current: 2,
+                longest: 2
+            )
+        )
     }
 
     @Test("ends the current streak at a missed past eligible date")
     func pastMissEndsCurrentStreak() throws {
-        let habit = try makeHabit(startedOn: date(2026, 1, 1))
-        let statistics = HabitStatisticsCalculator().calculate(
+        let day1 = try day(2026, 1, 1)
+        let day2 = try day(2026, 1, 2)
+        let referenceDay = try day(2026, 1, 4)
+
+        let habit = try makeHabit(startedOn: day1)
+
+        let statistics = try HabitStatisticsCalculator().calculate(
             habit: habit,
-            completions: completions(for: habit, on: [date(2026, 1, 1), date(2026, 1, 2)]),
-            referenceDate: date(2026, 1, 4),
-            calendar: calendar
+            completions: completions(
+                for: habit,
+                on: [day1, day2]
+            ),
+            referenceDay: referenceDay
         )
 
-        #expect(statistics.streak == HabitStreak(current: 0, longest: 2))
+        #expect(
+            statistics.streak == HabitStreak(
+                current: 0,
+                longest: 2
+            )
+        )
     }
 
     @Test("calculates streaks across year and month boundaries")
     func streakCrossesDateBoundaries() throws {
-        let habit = try makeHabit(startedOn: date(2025, 12, 31))
-        let statistics = HabitStatisticsCalculator().calculate(
+        let day1 = try day(2025, 12, 31)
+        let day2 = try day(2026, 1, 1)
+        let day3 = try day(2026, 1, 2)
+
+        let habit = try makeHabit(startedOn: day1)
+
+        let statistics = try HabitStatisticsCalculator().calculate(
             habit: habit,
-            completions: completions(for: habit, on: [
-                date(2025, 12, 31), date(2026, 1, 1), date(2026, 1, 2)
-            ]),
-            referenceDate: date(2026, 1, 2),
-            calendar: calendar
+            completions: completions(
+                for: habit,
+                on: [day1, day2, day3]
+            ),
+            referenceDay: day3
         )
 
-        #expect(statistics.streak == HabitStreak(current: 3, longest: 3))
+        #expect(
+            statistics.streak == HabitStreak(
+                current: 3,
+                longest: 3
+            )
+        )
     }
 
     @Test("uses an archived habit's final tracking date for streaks")
     func streakUsesArchivedFinalTrackingDate() throws {
-        let archiveDate = date(2026, 1, 2)
-        let habit = try makeHabit(startedOn: date(2026, 1, 1), archivedOn: archiveDate)
-        let statistics = HabitStatisticsCalculator().calculate(
-            habit: habit,
-            completions: completions(for: habit, on: [date(2026, 1, 1), archiveDate]),
-            referenceDate: date(2026, 1, 4),
-            calendar: calendar
+        let startDay = try day(2026, 1, 1)
+        let archiveDay = try day(2026, 1, 2)
+        let referenceDay = try day(2026, 1, 4)
+
+        let habit = try makeHabit(
+            startedOn: startDay,
+            archivedOn: archiveDay
         )
 
-        #expect(statistics.streak == HabitStreak(current: 2, longest: 2))
+        let statistics = try HabitStatisticsCalculator().calculate(
+            habit: habit,
+            completions: completions(
+                for: habit,
+                on: [startDay, archiveDay]
+            ),
+            referenceDay: referenceDay
+        )
+
+        #expect(
+            statistics.streak == HabitStreak(
+                current: 2,
+                longest: 2
+            )
+        )
     }
-    
+
     @Test("returns zero statistics before the habit starts")
     func returnsZeroBeforeHabitStart() throws {
-        let habit = try makeHabit(startedOn: date(2026, 1, 2))
+        let startDay = try day(2026, 1, 2)
+        let referenceDay = try day(2026, 1, 1)
 
-        let statistics = HabitStatisticsCalculator().calculate(
+        let habit = try makeHabit(startedOn: startDay)
+
+        let statistics = try HabitStatisticsCalculator().calculate(
             habit: habit,
             completions: [],
-            referenceDate: date(2026, 1, 1),
-            calendar: calendar
+            referenceDay: referenceDay
         )
 
         #expect(statistics.totalCompletedDays == 0)
         #expect(statistics.eligibleTrackingDays == 0)
         #expect(statistics.completionRate == 0)
-        #expect(statistics.streak == HabitStreak(current: 0, longest: 0))
+        #expect(
+            statistics.streak == HabitStreak(
+                current: 0,
+                longest: 0
+            )
+        )
     }
 
-    private func makeHabit(startedOn: Date, archivedOn: Date? = nil) throws -> Habit {
+    private func makeHabit(
+        startedOn: LocalDay,
+        archivedOn: LocalDay? = nil
+    ) throws -> Habit {
         try Habit(
             name: "Read",
             startedOn: startedOn,
             archivedOn: archivedOn,
-            createdAt: startedOn
+            createdAt: recordedAt
         )
     }
 
-    private func completions(for habit: Habit, on dates: [Date]) -> [Completion] {
-        dates.map { Completion(habitID: habit.id, completedOn: $0, recordedAt: $0) }
+    private func completions(for habit: Habit, on days: [LocalDay]) -> [Completion] {
+        days.map {
+            Completion(
+                habitID: habit.id,
+                completedOn: $0,
+                recordedAt: recordedAt
+            )
+        }
     }
 
-    private func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
-        calendar.date(from: DateComponents(year: year, month: month, day: day))!
+    private func day(_ year: Int, _ month: Int, _ day: Int) throws -> LocalDay {
+        try LocalDay(
+            year: year,
+            month: month,
+            day: day
+        )
     }
 }

@@ -8,23 +8,23 @@ import Testing
 @testable import StackDay
 
 struct HabitEntryTests {
-    private let startDate = Date(timeIntervalSince1970: 1_000_000)
-    private let referenceDate = Date(timeIntervalSince1970: 1_172_800)
+    private let recordedAt = Date(timeIntervalSince1970: 1_172_800)
 
     @Test("derives a completed entry from a matching completion")
     func completedEntry() throws {
+        let referenceDay = try makeReferenceDay()
         let habit = try makeHabit()
         let completion = Completion(
             habitID: habit.id,
-            completedOn: referenceDate,
-            recordedAt: referenceDate
+            completedOn: referenceDay,
+            recordedAt: recordedAt
         )
 
         let entry = try HabitEntry(
             habit: habit,
-            targetDate: referenceDate,
+            targetDay: referenceDay,
             completion: completion,
-            referenceDate: referenceDate
+            referenceDay: referenceDay
         )
 
         #expect(entry.state == .completed)
@@ -32,13 +32,14 @@ struct HabitEntryTests {
 
     @Test("derives today's incomplete entry as pending")
     func pendingEntry() throws {
+        let referenceDay = try makeReferenceDay()
         let habit = try makeHabit()
 
         let entry = try HabitEntry(
             habit: habit,
-            targetDate: referenceDate,
+            targetDay: referenceDay,
             completion: nil,
-            referenceDate: referenceDate
+            referenceDay: referenceDay
         )
 
         #expect(entry.state == .pending)
@@ -46,14 +47,15 @@ struct HabitEntryTests {
 
     @Test("derives a past incomplete entry as missed")
     func missedEntry() throws {
+        let referenceDay = try makeReferenceDay()
+        let pastDay = try referenceDay.addingDays(-1)
         let habit = try makeHabit()
-        let pastDate = referenceDate.addingTimeInterval(-86_400)
 
         let entry = try HabitEntry(
             habit: habit,
-            targetDate: pastDate,
+            targetDay: pastDay,
             completion: nil,
-            referenceDate: referenceDate
+            referenceDay: referenceDay
         )
 
         #expect(entry.state == .missed)
@@ -61,25 +63,44 @@ struct HabitEntryTests {
 
     @Test("allows an entry on the archived habit's final tracking date")
     func allowsArchiveDate() throws {
-        let archivedOn = referenceDate.addingTimeInterval(-86_400)
+        let referenceDay = try makeReferenceDay()
+        let archivedOn = try referenceDay.addingDays(-1)
         let habit = try makeHabit(archivedOn: archivedOn)
 
         let entry = try HabitEntry(
             habit: habit,
-            targetDate: archivedOn,
+            targetDay: archivedOn,
             completion: nil,
-            referenceDate: referenceDate
+            referenceDay: referenceDay
         )
 
         #expect(entry.state == .missed)
     }
-    
-    private func makeHabit(archivedOn: Date? = nil) throws -> Habit {
+
+    private func makeStartDay() throws -> LocalDay {
+        try LocalDay(
+            year: 2026,
+            month: 8,
+            day: 18
+        )
+    }
+
+    private func makeReferenceDay() throws -> LocalDay {
+        try LocalDay(
+            year: 2026,
+            month: 8,
+            day: 20
+        )
+    }
+
+    private func makeHabit(
+        archivedOn: LocalDay? = nil
+    ) throws -> Habit {
         try Habit(
             name: "Read",
-            startedOn: startDate,
+            startedOn: makeStartDay(),
             archivedOn: archivedOn,
-            createdAt: startDate
+            createdAt: recordedAt
         )
     }
 }
