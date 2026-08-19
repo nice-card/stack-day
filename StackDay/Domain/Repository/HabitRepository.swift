@@ -12,3 +12,8 @@ protocol HabitRepository {
     func update(_ habit: Habit) async throws
     func delete(id: Habit.ID) async throws
 }
+
+enum HabitRepositoryError: Error, Equatable {
+    case alreadyExists
+    case notFound
+}
