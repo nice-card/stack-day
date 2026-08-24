@@ -18,6 +18,11 @@ It is a habit tracker, not a todo or productivity app.
 
 Use MVVM with UseCases and Repositories.
 
+## Code Conventions
+
+- Keep injected dependencies explicit; do not provide concrete implementations as default arguments.
+- Avoid force unwrapping and `try!` in tests. Use `#require` for optional values and propagate errors with `throws`.
+
 ## Project Documents
 
 Read the relevant document before changing product behavior:
