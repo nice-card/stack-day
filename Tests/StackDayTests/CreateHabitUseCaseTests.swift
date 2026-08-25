@@ -19,11 +19,12 @@ struct CreateHabitUseCaseTests {
             clock: FixedClock(now: createdAt)
         )
 
-        let habit = try await useCase.execute(
+        try await useCase.execute(
             name: "  Read  ",
             startedOn: startedOn
         )
 
+        let habit = try #require(await repository.inserted.first)
         #expect(habit.name == "Read")
         #expect(habit.startedOn == startedOn)
         #expect(habit.createdAt == createdAt)

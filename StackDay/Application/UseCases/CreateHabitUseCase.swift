@@ -9,12 +9,12 @@ struct CreateHabitUseCase {
     private let repository: any HabitRepository
     private let clock: any Clock
 
-    init(repository: any HabitRepository, clock: any Clock = SystemClock()) {
+    init(repository: any HabitRepository, clock: any Clock) {
         self.repository = repository
         self.clock = clock
     }
 
-    func execute(name: String, startedOn: LocalDay) async throws -> Habit {
+    func execute(name: String, startedOn: LocalDay) async throws {
         let habit = try Habit(
             name: name,
             startedOn: startedOn,
@@ -22,6 +22,5 @@ struct CreateHabitUseCase {
         )
 
         try await repository.insert(habit)
-        return habit
     }
 }

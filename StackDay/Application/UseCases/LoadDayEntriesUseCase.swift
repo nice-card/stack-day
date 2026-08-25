@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct LoadTodayEntriesUseCase {
+struct LoadDayEntriesUseCase {
     private let habitRepository: any HabitRepository
     private let completionRepository: any CompletionRepository
     private let clock: any Clock
@@ -14,8 +14,8 @@ struct LoadTodayEntriesUseCase {
     init(
         habitRepository: any HabitRepository,
         completionRepository: any CompletionRepository,
-        clock: any Clock = SystemClock(),
-        timeZone: TimeZone = .current
+        clock: any Clock,
+        timeZone: TimeZone
     ) {
         self.habitRepository = habitRepository
         self.completionRepository = completionRepository
@@ -23,22 +23,28 @@ struct LoadTodayEntriesUseCase {
         self.timeZone = timeZone
     }
 
-    func execute() async throws -> [HabitEntry] {
-        let today = try LocalDay(date: clock.now, timeZone: timeZone)
+    func execute(on targetDay: LocalDay) async throws -> [HabitEntry] {
+        let referenceDay = try LocalDay(
+            date: clock.now,
+            timeZone: timeZone
+        )
         let habits = try await habitRepository.fetchAll()
 
         var entries: [HabitEntry] = []
-        for habit in habits where isActive(habit, on: today) {
+
+        for habit in habits where isActive(habit, on: targetDay) {
             let completion = try await completionRepository.fetch(
                 habitID: habit.id,
-                completedOn: today
+                completedOn: targetDay
             )
+
             let entry = try HabitEntry(
                 habit: habit,
-                targetDay: today,
+                targetDay: targetDay,
                 completion: completion,
-                referenceDay: today
+                referenceDay: referenceDay
             )
+
             entries.append(entry)
         }
 

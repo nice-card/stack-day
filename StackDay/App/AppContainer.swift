@@ -55,8 +55,8 @@ final class AppContainer {
         )
     }
 
-    func makeLoadTodayEntriesUseCase() -> LoadTodayEntriesUseCase {
-        LoadTodayEntriesUseCase(
+    func makeLoadTodayEntriesUseCase() -> LoadDayEntriesUseCase {
+        LoadDayEntriesUseCase(
             habitRepository: habitRepository,
             completionRepository: completionRepository,
             clock: clock,

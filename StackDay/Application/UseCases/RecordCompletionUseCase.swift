@@ -14,8 +14,8 @@ struct RecordCompletionUseCase {
     init(
         habitRepository: any HabitRepository,
         completionRepository: any CompletionRepository,
-        clock: any Clock = SystemClock(),
-        timeZone: TimeZone = .current
+        clock: any Clock,
+        timeZone: TimeZone
     ) {
         self.habitRepository = habitRepository
         self.completionRepository = completionRepository
@@ -23,7 +23,7 @@ struct RecordCompletionUseCase {
         self.timeZone = timeZone
     }
 
-    func execute(habitID: Habit.ID, completedOn: LocalDay) async throws -> Completion {
+    func execute(habitID: Habit.ID, completedOn: LocalDay) async throws {
         guard let habit = try await habitRepository.fetch(id: habitID) else {
             throw RecordCompletionError.habitNotFound
         }
@@ -57,7 +57,6 @@ struct RecordCompletionUseCase {
         )
 
         try await completionRepository.insert(completion)
-        return completion
     }
 }
 

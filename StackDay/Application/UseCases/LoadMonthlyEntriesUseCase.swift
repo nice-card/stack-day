@@ -15,7 +15,7 @@ struct LoadMonthlyEntriesUseCase {
         habitRepository: any HabitRepository,
         completionRepository: any CompletionRepository,
         clock: any Clock,
-        timeZone: TimeZone = .current
+        timeZone: TimeZone
     ) {
         self.habitRepository = habitRepository
         self.completionRepository = completionRepository

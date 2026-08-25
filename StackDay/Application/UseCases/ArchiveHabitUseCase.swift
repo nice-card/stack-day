@@ -10,7 +10,7 @@ struct ArchiveHabitUseCase {
     private let clock: any Clock
     private let timeZone: TimeZone
 
-    init(repository: any HabitRepository, clock: any Clock = SystemClock(), timeZone: TimeZone = .current) {
+    init(repository: any HabitRepository, clock: any Clock, timeZone: TimeZone) {
         self.repository = repository
         self.clock = clock
         self.timeZone = timeZone
@@ -22,7 +22,10 @@ struct ArchiveHabitUseCase {
         }
 
         let now = clock.now
-        try habit.archive(on: try LocalDay(date: now, timeZone: timeZone), updatedAt: now)
+        try habit.archive(
+            on: try LocalDay(date: now, timeZone: timeZone),
+            updatedAt: now
+        )
         try await repository.update(habit)
         return habit
     }

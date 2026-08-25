@@ -14,8 +14,8 @@ struct CancelCompletionUseCase {
     init(
         habitRepository: any HabitRepository,
         completionRepository: any CompletionRepository,
-        clock: any Clock = SystemClock(),
-        timeZone: TimeZone = .current
+        clock: any Clock,
+        timeZone: TimeZone
     ) {
         self.habitRepository = habitRepository
         self.completionRepository = completionRepository

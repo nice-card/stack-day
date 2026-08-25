@@ -21,15 +21,18 @@ struct RecordCompletionUseCaseTests {
             completions: completions
         )
 
-        let completion = try await useCase.execute(
+        try await useCase.execute(
             habitID: habit.id,
             completedOn: referenceDay
         )
 
+        let inserted = await completions.inserted
+        let completion = try #require(inserted.first)
+
+        #expect(inserted.count == 1)
         #expect(completion.habitID == habit.id)
         #expect(completion.completedOn == referenceDay)
         #expect(completion.recordedAt == recordedAt)
-        #expect(await completions.inserted == [completion])
     }
 
     @Test("rejects a completion for an unknown habit")
