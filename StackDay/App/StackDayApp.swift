@@ -22,9 +22,7 @@ struct StackDayApp: App {
         WindowGroup {
             switch dayViewModelResult {
             case .success(let viewModel):
-                NavigationStack {
-                    DayView(viewModel: viewModel)
-                }
+                RootTabView(dayViewModel: viewModel)
 
             case .failure:
                 ContentUnavailableView(
