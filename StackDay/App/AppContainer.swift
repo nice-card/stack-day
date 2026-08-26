@@ -55,7 +55,7 @@ final class AppContainer {
         )
     }
 
-    func makeLoadTodayEntriesUseCase() -> LoadDayEntriesUseCase {
+    func makeLoadDayEntriesUseCase() -> LoadDayEntriesUseCase {
         LoadDayEntriesUseCase(
             habitRepository: habitRepository,
             completionRepository: completionRepository,
@@ -79,6 +79,18 @@ final class AppContainer {
             completionRepository: completionRepository,
             clock: clock,
             timeZone: timeZone
+        )
+    }
+
+    @MainActor
+    func makeDayViewModel() throws -> DayViewModel {
+        let selectedDay = try LocalDay(date: clock.now, timeZone: timeZone)
+        return DayViewModel(
+            selectedDay: selectedDay,
+            loadDayEntriesUseCase: makeLoadDayEntriesUseCase(),
+            recordCompletionUseCase: makeRecordCompletionUseCase(),
+            cancelCompletionUseCase: makeCancelCompletionUseCase(),
+            createHabitUseCase: makeCreateHabitUseCase()
         )
     }
 }
