@@ -32,7 +32,7 @@ struct CancelCompletionUseCase {
         let referenceDay = try LocalDay(date: now, timeZone: timeZone)
 
         do {
-            try habit.validateDate(
+            try habit.validateRecordableDate(
                 completedOn,
                 referenceDay: referenceDay
             )

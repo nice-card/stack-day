@@ -111,7 +111,7 @@ struct HabitTests {
         )
 
         #expect(throws: HabitDateError.beforeHabitStart) {
-            try habit.validateDate(
+            try habit.validateRecordableDate(
                 targetDay,
                 referenceDay: startedOn
             )
@@ -131,7 +131,7 @@ struct HabitTests {
         )
 
         #expect(throws: HabitDateError.futureDate) {
-            try habit.validateDate(
+            try habit.validateRecordableDate(
                 futureDay,
                 referenceDay: referenceDay
             )
@@ -152,7 +152,7 @@ struct HabitTests {
         )
 
         #expect(throws: HabitDateError.afterHabitArchived) {
-            try habit.validateDate(
+            try habit.validateRecordableDate(
                 dayAfterArchive,
                 referenceDay: dayAfterArchive
             )
@@ -172,7 +172,7 @@ struct HabitTests {
         )
 
         #expect(throws: Never.self) {
-            try habit.validateDate(
+            try habit.validateRecordableDate(
                 archivedOn,
                 referenceDay: archivedOn
             )

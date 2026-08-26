@@ -35,7 +35,7 @@ struct RecordCompletionUseCase {
         )
 
         do {
-            try habit.validateDate(
+            try habit.validateRecordableDate(
                 completedOn,
                 referenceDay: referenceDay
             )

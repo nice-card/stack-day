@@ -41,7 +41,7 @@ struct Habit: Equatable, Identifiable {
         updatedAt = date
     }
     
-    func validateDate(_ targetDate: LocalDay, referenceDay: LocalDay) throws {
+    func validateRecordableDate(_ targetDate: LocalDay, referenceDay: LocalDay) throws {
         guard targetDate >= startedOn else {
             throw HabitDateError.beforeHabitStart
         }

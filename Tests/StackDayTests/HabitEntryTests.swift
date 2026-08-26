@@ -61,6 +61,22 @@ struct HabitEntryTests {
         #expect(entry.state == .missed)
     }
 
+    @Test("derives a future entry without throwing")
+    func futureEntry() throws {
+        let referenceDay = try makeReferenceDay()
+        let futureDay = try referenceDay.addingDays(1)
+        let habit = try makeHabit()
+
+        let entry = try HabitEntry(
+            habit: habit,
+            targetDay: futureDay,
+            completion: nil,
+            referenceDay: referenceDay
+        )
+
+        #expect(entry.state == .future)
+    }
+
     @Test("allows an entry on the archived habit's final tracking date")
     func allowsArchiveDate() throws {
         let referenceDay = try makeReferenceDay()
