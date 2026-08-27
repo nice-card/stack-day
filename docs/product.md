@@ -27,12 +27,12 @@ not implementation requirements.
 
 The MVP supports daily habits with a strict streak policy.
 
-- Create, archive, and permanently delete habits
+- Create, rename, archive, and permanently delete habits
 - View habits scheduled for today
 - Complete and uncomplete habits for today
 - Add or cancel completion records for past dates
-- View current streak, longest streak, total completed days, and completion rate
-- View a monthly heatmap
+- View current streak, longest streak, total completed days, completion rate,
+  and a monthly heatmap in the Statistics tab
 - Persist data locally and restore it after relaunch
 
 Future dates and dates before a habit's start date cannot be recorded or edited.
@@ -41,23 +41,25 @@ Archived habits are removed from today's screen. Their existing records and deri
 
 ## Core Flow
 
-Create a habit → show it on today's screen → record a completion → calculate streaks and statistics → review the heatmap → edit past completion records
+Create or rename a habit → show it on today's screen → record a completion →
+calculate streaks and statistics → review the Statistics tab → edit past
+completion records
 
 ## Screens
 
 The initial product can be covered by four screens:
 
 - Today
-- Habit creation/editing
-- Habit detail
+- Habit creation/renaming
 - Record editing
+- Statistics
 
 ## Future Scope
 
 The following are outside the MVP:
 
-- Editing habit definitions
 - Repeating habits on selected weekdays
+- Changing a habit's start date
 - Resuming archived habits and multiple tracking periods
 - Count-based, total-based, and timer-based habits
 - Protected streaks and no-streak mode

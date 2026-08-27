@@ -17,8 +17,11 @@ without adding complexity that the product does not need.
 The MVP is complete when:
 
 - A completion survives app relaunch.
-- Today, detail, and heatmap views stay consistent after a record changes.
+- Today and Statistics views stay consistent after a record changes.
 - Editing a past record recalculates streaks and statistics.
-- Date boundaries such as midnight, month-end, and year-end are tested.
+- Creating, renaming, archiving, and deleting a habit updates affected views
+  and statistics consistently.
+- Date boundaries such as midnight, month-end, year-end, and an archive date
+  with and without a completion are tested.
 - Empty, first-habit, and first-completion flows are usable.
 - Core interactions work with Dynamic Type and dark mode.
