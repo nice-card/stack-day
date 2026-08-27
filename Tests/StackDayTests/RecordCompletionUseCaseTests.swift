@@ -104,6 +104,30 @@ struct RecordCompletionUseCaseTests {
         #expect(await completions.inserted.isEmpty)
     }
 
+    @Test("records a completion on an archive date")
+    func recordsCompletionOnArchiveDate() async throws {
+        let archiveDay = try makeReferenceDay()
+        let habit = try Habit(
+            name: "Read",
+            startedOn: makeStartedOn(),
+            archivedOn: archiveDay,
+            createdAt: recordedAt
+        )
+        let completions = RecordingCompletionRepository()
+        let useCase = makeUseCase(
+            habits: RecordingHabitRepository(habits: [habit]),
+            completions: completions
+        )
+
+        try await useCase.execute(
+            habitID: habit.id,
+            completedOn: archiveDay
+        )
+
+        let completion = try #require(await completions.inserted.first)
+        #expect(completion.completedOn == archiveDay)
+    }
+
     private func makeStartedOn() throws -> LocalDay {
         try LocalDay(year: 1970, month: 1, day: 12)
     }

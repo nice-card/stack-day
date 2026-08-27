@@ -52,6 +52,25 @@ struct Habit: Equatable, Identifiable {
             throw HabitDateError.afterHabitArchived
         }
     }
+
+    func isTracked(
+        on targetDate: LocalDay,
+        hasCompletionOnArchiveDay: Bool
+    ) -> Bool {
+        guard targetDate >= startedOn else { return false }
+        guard let archivedOn else { return true }
+        guard targetDate <= archivedOn else { return false }
+        return targetDate < archivedOn || hasCompletionOnArchiveDay
+    }
+
+    func finalTrackingDate(
+        hasCompletionOnArchiveDate: Bool
+    ) throws -> LocalDay? {
+        guard let archivedOn else { return nil }
+        return hasCompletionOnArchiveDate
+            ? archivedOn
+            : try archivedOn.addingDays(-1)
+    }
 }
 
 enum HabitError: Error, Equatable {

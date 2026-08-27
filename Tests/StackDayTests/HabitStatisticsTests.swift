@@ -100,6 +100,27 @@ struct HabitStatisticsTests {
         #expect(statistics.completionRate == 1)
     }
 
+    @Test("excludes an incomplete archive date from statistics")
+    func excludesIncompleteArchiveDateFromStatistics() throws {
+        let startDay = try day(2026, 1, 1)
+        let archiveDay = try day(2026, 1, 2)
+        let habit = try makeHabit(
+            startedOn: startDay,
+            archivedOn: archiveDay
+        )
+
+        let statistics = try HabitStatisticsCalculator().calculate(
+            habit: habit,
+            completions: completions(for: habit, on: [startDay]),
+            referenceDay: try day(2026, 1, 4)
+        )
+
+        #expect(statistics.eligibleTrackingDays == 1)
+        #expect(statistics.totalCompletedDays == 1)
+        #expect(statistics.completionRate == 1)
+        #expect(statistics.streak == HabitStreak(current: 1, longest: 1))
+    }
+
     @Test("calculates current and longest daily streaks")
     func calculatesCurrentAndLongestStreaks() throws {
         let day1 = try day(2026, 1, 1)

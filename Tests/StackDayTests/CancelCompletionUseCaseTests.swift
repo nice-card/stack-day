@@ -101,6 +101,36 @@ struct CancelCompletionUseCaseTests {
         #expect(await completions.deleted.isEmpty)
     }
 
+    @Test("cancels a completion on an archive date")
+    func cancelsCompletionOnArchiveDate() async throws {
+        let archiveDay = try makeReferenceDay()
+        let habit = try Habit(
+            name: "Read",
+            startedOn: makeStartedOn(),
+            archivedOn: archiveDay,
+            createdAt: recordedAt
+        )
+        let completion = Completion(
+            habitID: habit.id,
+            completedOn: archiveDay,
+            recordedAt: recordedAt
+        )
+        let completions = RecordingCompletionRepository(
+            completions: [completion]
+        )
+        let useCase = makeUseCase(
+            habit: habit,
+            completions: completions
+        )
+
+        try await useCase.execute(
+            habitID: habit.id,
+            completedOn: archiveDay
+        )
+
+        #expect(await completions.deleted == [completion.id])
+    }
+
     private func makeStartedOn() throws -> LocalDay {
         try LocalDay(
             year: 1970,

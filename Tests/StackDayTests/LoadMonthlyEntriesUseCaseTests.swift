@@ -44,6 +44,13 @@ struct LoadMonthlyEntriesUseCaseTests {
         )
         let useCase = try makeUseCase(
             habits: [habit],
+            completions: [
+                Completion(
+                    habitID: habit.id,
+                    completedOn: archiveDay,
+                    recordedAt: now
+                )
+            ],
             referenceDay: try day(2026, 8, 31)
         )
 
@@ -54,6 +61,28 @@ struct LoadMonthlyEntriesUseCaseTests {
         )
 
         #expect(entries.map(\.targetDay) == [startDay, archiveDay])
+    }
+
+    @Test("excludes an incomplete archive date from monthly entries")
+    func excludesIncompleteArchiveDate() async throws {
+        let startDay = try day(2026, 8, 18)
+        let archiveDay = try day(2026, 8, 19)
+        let habit = try makeHabit(
+            startedOn: startDay,
+            archivedOn: archiveDay
+        )
+        let useCase = try makeUseCase(
+            habits: [habit],
+            referenceDay: try day(2026, 8, 31)
+        )
+
+        let entries = try await useCase.execute(
+            habitID: habit.id,
+            year: 2026,
+            month: 8
+        )
+
+        #expect(entries.map(\.targetDay) == [startDay])
     }
 
     @Test("excludes future days from the current and future months")
@@ -132,6 +161,13 @@ struct LoadMonthlyEntriesUseCaseTests {
         )
         let useCase = try makeUseCase(
             habits: [habit],
+            completions: [
+                Completion(
+                    habitID: habit.id,
+                    completedOn: february1,
+                    recordedAt: now
+                )
+            ],
             referenceDay: february1
         )
 

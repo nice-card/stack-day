@@ -179,6 +179,90 @@ struct HabitTests {
         }
     }
 
+    @Test("tracks dates according to start and archive boundaries")
+    func tracksDatesAccordingToBoundaries() throws {
+        let startedOn = try makeStartedOn()
+        let archivedOn = try startedOn.addingDays(2)
+        let beforeStart = try startedOn.addingDays(-1)
+        let beforeArchive = try startedOn.addingDays(1)
+        let afterArchive = try archivedOn.addingDays(1)
+        let habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            archivedOn: archivedOn,
+            createdAt: createdAt
+        )
+
+        #expect(
+            habit.isTracked(
+                on: beforeStart,
+                hasCompletionOnArchiveDay: false
+            ) == false
+        )
+        #expect(
+            habit.isTracked(
+                on: beforeArchive,
+                hasCompletionOnArchiveDay: false
+            )
+        )
+        #expect(
+            habit.isTracked(
+                on: archivedOn,
+                hasCompletionOnArchiveDay: false
+            ) == false
+        )
+        #expect(
+            habit.isTracked(
+                on: archivedOn,
+                hasCompletionOnArchiveDay: true
+            )
+        )
+        #expect(
+            habit.isTracked(
+                on: afterArchive,
+                hasCompletionOnArchiveDay: true
+            ) == false
+        )
+    }
+
+    @Test("uses today as the effective end date for an active habit")
+    func returnsNilFinalTrackingDateForActiveHabit() throws {
+        let habit = try Habit(
+            name: "Read",
+            startedOn: makeStartedOn(),
+            createdAt: createdAt
+        )
+
+        #expect(
+            try habit.finalTrackingDate(
+                hasCompletionOnArchiveDate: false
+            ) == nil
+        )
+    }
+
+    @Test("uses the archive date only when it has a completion")
+    func calculatesFinalTrackingDateFromArchiveCompletion() throws {
+        let startedOn = try makeStartedOn()
+        let archivedOn = try startedOn.addingDays(2)
+        let habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            archivedOn: archivedOn,
+            createdAt: createdAt
+        )
+
+        let completedArchiveFinalDay = try habit.finalTrackingDate(
+            hasCompletionOnArchiveDate: true
+        )
+        let incompleteArchiveFinalDay = try habit.finalTrackingDate(
+            hasCompletionOnArchiveDate: false
+        )
+        let expectedIncompleteFinalDay = try archivedOn.addingDays(-1)
+
+        #expect(completedArchiveFinalDay == archivedOn)
+        #expect(incompleteArchiveFinalDay == expectedIncompleteFinalDay)
+    }
+
     private func makeStartedOn() throws -> LocalDay {
         try LocalDay(year: 2026, month: 8, day: 18)
     }

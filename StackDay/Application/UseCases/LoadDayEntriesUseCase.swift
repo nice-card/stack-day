@@ -32,11 +32,18 @@ struct LoadDayEntriesUseCase {
 
         var entries: [HabitEntry] = []
 
-        for habit in habits where isActive(habit, on: targetDay) {
+        for habit in habits {
             let completion = try await completionRepository.fetch(
                 habitID: habit.id,
                 completedOn: targetDay
             )
+
+            guard habit.isTracked(
+                on: targetDay,
+                hasCompletionOnArchiveDay: completion != nil
+            ) else {
+                continue
+            }
 
             let entry = try HabitEntry(
                 habit: habit,
@@ -49,11 +56,5 @@ struct LoadDayEntriesUseCase {
         }
 
         return entries
-    }
-
-    private func isActive(_ habit: Habit, on day: LocalDay) -> Bool {
-        guard habit.startedOn <= day else { return false }
-        guard let archivedOn = habit.archivedOn else { return true }
-        return day <= archivedOn
     }
 }

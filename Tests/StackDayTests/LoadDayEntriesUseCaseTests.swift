@@ -93,8 +93,8 @@ struct LoadDayEntriesUseCaseTests {
         #expect(entries.map(\.habitID) == [activeHabit.id])
     }
 
-    @Test("includes a habit on its archive day")
-    func includesHabitOnArchiveDay() async throws {
+    @Test("includes a habit on its archive day when it was completed")
+    func includesCompletedHabitOnArchiveDay() async throws {
         let targetDay = try day(2026, 8, 18)
         let referenceDay = try day(2026, 8, 19)
         let habit = try makeHabit(
@@ -105,12 +105,37 @@ struct LoadDayEntriesUseCaseTests {
 
         let useCase = try makeUseCase(
             habits: [habit],
+            completions: [
+                Completion(
+                    habitID: habit.id,
+                    completedOn: targetDay,
+                    recordedAt: now
+                )
+            ],
             referenceDay: referenceDay
         )
 
         let entries = try await useCase.execute(on: targetDay)
 
         #expect(entries.map(\.habitID) == [habit.id])
+    }
+
+    @Test("excludes an incomplete habit on its archive day")
+    func excludesIncompleteHabitOnArchiveDay() async throws {
+        let archiveDay = try day(2026, 8, 18)
+        let habit = try makeHabit(
+            name: "Read",
+            startedOn: try archiveDay.addingDays(-1),
+            archivedOn: archiveDay
+        )
+        let useCase = try makeUseCase(
+            habits: [habit],
+            referenceDay: try archiveDay.addingDays(1)
+        )
+
+        let entries = try await useCase.execute(on: archiveDay)
+
+        #expect(entries.isEmpty)
     }
 
     @Test("uses the injected clock and time zone as the reference day")

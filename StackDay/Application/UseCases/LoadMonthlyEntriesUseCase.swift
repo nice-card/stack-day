@@ -37,28 +37,28 @@ struct LoadMonthlyEntriesUseCase {
         var entries: [HabitEntry] = []
 
         while day.year == year && day.month == month {
-            if isActive(habit, on: day), day <= referenceDay {
+            if day <= referenceDay {
                 let completion = try await completionRepository.fetch(
                     habitID: habit.id,
                     completedOn: day
                 )
-                let entry = try HabitEntry(
-                    habit: habit,
-                    targetDay: day,
-                    completion: completion,
-                    referenceDay: referenceDay
-                )
-                entries.append(entry)
+
+                if habit.isTracked(
+                    on: day,
+                    hasCompletionOnArchiveDay: completion != nil
+                ) {
+                    let entry = try HabitEntry(
+                        habit: habit,
+                        targetDay: day,
+                        completion: completion,
+                        referenceDay: referenceDay
+                    )
+                    entries.append(entry)
+                }
             }
             day = try day.addingDays(1)
         }
         return entries
-    }
-
-    private func isActive(_ habit: Habit, on day: LocalDay) -> Bool {
-        guard habit.startedOn <= day else { return false }
-        guard let archivedOn = habit.archivedOn else { return true }
-        return day <= archivedOn
     }
 }
 
