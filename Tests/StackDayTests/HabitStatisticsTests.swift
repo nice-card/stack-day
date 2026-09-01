@@ -106,7 +106,7 @@ struct HabitStatisticsTests {
         let archiveDay = try day(2026, 1, 2)
         let habit = try makeHabit(
             startedOn: startDay,
-            archivedOn: archiveDay
+            archivedOn: try archiveDay.addingDays(-1)
         )
 
         let statistics = try HabitStatisticsCalculator().calculate(

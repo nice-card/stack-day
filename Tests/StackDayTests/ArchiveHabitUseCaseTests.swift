@@ -10,12 +10,17 @@ import Testing
 struct ArchiveHabitUseCaseTests {
     private let archivedAt = Date(timeIntervalSince1970: 1_086_400)
 
-    @Test("archives an existing habit at the injected current time")
-    func archivesExistingHabit() async throws {
+    @Test("includes the archive date in the fixed tracking period when completed")
+    func archivesCompletedHabit() async throws {
         let habit = try makeHabit()
         let repository = RecordingHabitRepository(habits: [habit])
+        let archiveDay = try LocalDay(date: archivedAt, timeZone: .gmt)
+        let completions = RecordingCompletionRepository(completions: [
+            Completion(habitID: habit.id, completedOn: archiveDay, recordedAt: archivedAt)
+        ])
         let useCase = ArchiveHabitUseCase(
-            repository: repository,
+            habitRepository: repository,
+            completionRepository: completions,
             clock: FixedClock(now: archivedAt),
             timeZone: .gmt
         )
@@ -31,11 +36,48 @@ struct ArchiveHabitUseCaseTests {
         #expect(await repository.updated == [archivedHabit])
     }
 
+    @Test("ends tracking before the archive date when incomplete")
+    func archivesIncompleteHabit() async throws {
+        let habit = try makeHabit()
+        let repository = RecordingHabitRepository(habits: [habit])
+        let useCase = ArchiveHabitUseCase(
+            habitRepository: repository,
+            completionRepository: RecordingCompletionRepository(),
+            clock: FixedClock(now: archivedAt),
+            timeZone: .gmt
+        )
+
+        let archivedHabit = try await useCase.execute(habitID: habit.id)
+        let archiveDay = try LocalDay(date: archivedAt, timeZone: .gmt)
+        let expectedArchivedOn = try archiveDay.addingDays(-1)
+
+        #expect(archivedHabit.archivedOn == expectedArchivedOn)
+    }
+
+    @Test("allows an empty tracking period when archived on its start date incomplete")
+    func archivesStartDateWithoutCompletion() async throws {
+        let archiveDay = try LocalDay(date: archivedAt, timeZone: .gmt)
+        let habit = try makeHabit(startedOn: archiveDay)
+        let useCase = ArchiveHabitUseCase(
+            habitRepository: RecordingHabitRepository(habits: [habit]),
+            completionRepository: RecordingCompletionRepository(),
+            clock: FixedClock(now: archivedAt),
+            timeZone: .gmt
+        )
+
+        let archivedHabit = try await useCase.execute(habitID: habit.id)
+        let expectedArchivedOn = try archiveDay.addingDays(-1)
+
+        #expect(archivedHabit.archivedOn == expectedArchivedOn)
+        #expect(archivedHabit.isTracked(on: archiveDay) == false)
+    }
+
     @Test("rejects an unknown habit without updating")
     func rejectsUnknownHabit() async {
         let repository = RecordingHabitRepository()
         let useCase = ArchiveHabitUseCase(
-            repository: repository,
+            habitRepository: repository,
+            completionRepository: RecordingCompletionRepository(),
             clock: FixedClock(now: archivedAt),
             timeZone: .gmt
         )
@@ -58,7 +100,8 @@ struct ArchiveHabitUseCaseTests {
             .addingTimeInterval(-1)
 
         let useCase = ArchiveHabitUseCase(
-            repository: repository,
+            habitRepository: repository,
+            completionRepository: RecordingCompletionRepository(),
             clock: FixedClock(now: beforeStart),
             timeZone: .gmt
         )

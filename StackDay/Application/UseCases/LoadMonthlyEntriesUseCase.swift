@@ -38,15 +38,11 @@ struct LoadMonthlyEntriesUseCase {
 
         while day.year == year && day.month == month {
             if day <= referenceDay {
-                let completion = try await completionRepository.fetch(
-                    habitID: habit.id,
-                    completedOn: day
-                )
-
-                if habit.isTracked(
-                    on: day,
-                    hasCompletionOnArchiveDay: completion != nil
-                ) {
+                if habit.isTracked(on: day) {
+                    let completion = try await completionRepository.fetch(
+                        habitID: habit.id,
+                        completedOn: day
+                    )
                     let entry = try HabitEntry(
                         habit: habit,
                         targetDay: day,

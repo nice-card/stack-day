@@ -33,17 +33,14 @@ struct LoadDayEntriesUseCase {
         var entries: [HabitEntry] = []
 
         for habit in habits {
+            guard habit.isTracked(on: targetDay) else {
+                continue
+            }
+
             let completion = try await completionRepository.fetch(
                 habitID: habit.id,
                 completedOn: targetDay
             )
-
-            guard habit.isTracked(
-                on: targetDay,
-                hasCompletionOnArchiveDay: completion != nil
-            ) else {
-                continue
-            }
 
             let entry = try HabitEntry(
                 habit: habit,

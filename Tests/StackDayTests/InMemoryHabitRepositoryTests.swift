@@ -67,6 +67,7 @@ struct InMemoryHabitRepositoryTests {
 
         try archivedHabit.archive(
             on: archiveDay,
+            effectiveArchivedOn: archiveDay,
             updatedAt: updatedAt
         )
 

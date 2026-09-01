@@ -24,7 +24,8 @@ final class AppContainer {
 
     func makeArchiveHabitUseCase() -> ArchiveHabitUseCase {
         ArchiveHabitUseCase(
-            repository: habitRepository,
+            habitRepository: habitRepository,
+            completionRepository: completionRepository,
             clock: clock,
             timeZone: timeZone
         )

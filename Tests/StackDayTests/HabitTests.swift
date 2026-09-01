@@ -41,7 +41,7 @@ struct HabitTests {
     @Test("rejects an archive date before the habit starts")
     func rejectsArchiveBeforeStart() throws {
         let startedOn = try makeStartedOn()
-        let archivedOn = try startedOn.addingDays(-1)
+        let archivedOn = try startedOn.addingDays(-2)
 
         #expect(throws: HabitError.archiveBeforeStart) {
             try Habit(
@@ -67,6 +67,7 @@ struct HabitTests {
 
         try habit.archive(
             on: archivedOn,
+            effectiveArchivedOn: archivedOn,
             updatedAt: updatedAt
         )
 
@@ -88,15 +89,39 @@ struct HabitTests {
 
         try habit.archive(
             on: archivedOn,
+            effectiveArchivedOn: archivedOn,
             updatedAt: createdAt
         )
 
         #expect(throws: HabitError.alreadyArchived) {
             try habit.archive(
                 on: secondArchiveDay,
+                effectiveArchivedOn: secondArchiveDay,
                 updatedAt: createdAt
             )
         }
+    }
+
+    @Test("rejects an archive boundary other than the action date or preceding day")
+    func rejectsInvalidArchiveTrackingBoundary() throws {
+        let startedOn = try makeStartedOn()
+        let archiveActionDay = try startedOn.addingDays(2)
+        let invalidBoundary = try archiveActionDay.addingDays(-2)
+        var habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            createdAt: createdAt
+        )
+
+        #expect(throws: HabitError.invalidArchiveTrackingBoundary) {
+            try habit.archive(
+                on: archiveActionDay,
+                effectiveArchivedOn: invalidBoundary,
+                updatedAt: createdAt
+            )
+        }
+
+        #expect(habit.archivedOn == nil)
     }
 
     @Test("rejects dates before the habit starts")
@@ -159,8 +184,8 @@ struct HabitTests {
         }
     }
 
-    @Test("allows the archived date as the final valid date")
-    func allowsArchiveDate() throws {
+    @Test("allows the archived tracking boundary")
+    func allowsArchivedTrackingBoundary() throws {
         let startedOn = try makeStartedOn()
         let archivedOn = try startedOn.addingDays(1)
 
@@ -179,12 +204,12 @@ struct HabitTests {
         }
     }
 
-    @Test("tracks dates according to start and archive boundaries")
-    func tracksDatesAccordingToBoundaries() throws {
+    @Test("tracks dates according to fixed start and archive boundaries")
+    func tracksDatesAccordingToFixedBoundaries() throws {
         let startedOn = try makeStartedOn()
-        let archivedOn = try startedOn.addingDays(2)
+        let archivedOn = try startedOn.addingDays(1)
         let beforeStart = try startedOn.addingDays(-1)
-        let beforeArchive = try startedOn.addingDays(1)
+        let beforeArchive = startedOn
         let afterArchive = try archivedOn.addingDays(1)
         let habit = try Habit(
             name: "Read",
@@ -194,39 +219,21 @@ struct HabitTests {
         )
 
         #expect(
-            habit.isTracked(
-                on: beforeStart,
-                hasCompletionOnArchiveDay: false
-            ) == false
+            habit.isTracked(on: beforeStart) == false
         )
         #expect(
-            habit.isTracked(
-                on: beforeArchive,
-                hasCompletionOnArchiveDay: false
-            )
+            habit.isTracked(on: beforeArchive)
         )
         #expect(
-            habit.isTracked(
-                on: archivedOn,
-                hasCompletionOnArchiveDay: false
-            ) == false
+            habit.isTracked(on: archivedOn)
         )
         #expect(
-            habit.isTracked(
-                on: archivedOn,
-                hasCompletionOnArchiveDay: true
-            )
-        )
-        #expect(
-            habit.isTracked(
-                on: afterArchive,
-                hasCompletionOnArchiveDay: true
-            ) == false
+            habit.isTracked(on: afterArchive) == false
         )
     }
 
-    @Test("uses today as the effective end date for an active habit")
-    func returnsNilFinalTrackingDateForActiveHabit() throws {
+    @Test("has no archive boundary while active")
+    func hasNoArchiveBoundaryWhileActive() throws {
         let habit = try Habit(
             name: "Read",
             startedOn: makeStartedOn(),
@@ -234,33 +241,28 @@ struct HabitTests {
         )
 
         #expect(
-            try habit.finalTrackingDate(
-                hasCompletionOnArchiveDate: false
-            ) == nil
+            habit.archivedOn == nil
         )
     }
 
-    @Test("uses the archive date only when it has a completion")
-    func calculatesFinalTrackingDateFromArchiveCompletion() throws {
+    @Test("stores the effective archive boundary when archived")
+    func storesEffectiveArchiveBoundaryWhenArchived() throws {
         let startedOn = try makeStartedOn()
         let archivedOn = try startedOn.addingDays(2)
-        let habit = try Habit(
+        var habit = try Habit(
             name: "Read",
             startedOn: startedOn,
-            archivedOn: archivedOn,
             createdAt: createdAt
-        )
-
-        let completedArchiveFinalDay = try habit.finalTrackingDate(
-            hasCompletionOnArchiveDate: true
-        )
-        let incompleteArchiveFinalDay = try habit.finalTrackingDate(
-            hasCompletionOnArchiveDate: false
         )
         let expectedIncompleteFinalDay = try archivedOn.addingDays(-1)
 
-        #expect(completedArchiveFinalDay == archivedOn)
-        #expect(incompleteArchiveFinalDay == expectedIncompleteFinalDay)
+        try habit.archive(
+            on: archivedOn,
+            effectiveArchivedOn: expectedIncompleteFinalDay,
+            updatedAt: createdAt
+        )
+
+        #expect(habit.archivedOn == expectedIncompleteFinalDay)
     }
 
     private func makeStartedOn() throws -> LocalDay {

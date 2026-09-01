@@ -120,13 +120,31 @@ struct LoadDayEntriesUseCaseTests {
         #expect(entries.map(\.habitID) == [habit.id])
     }
 
-    @Test("excludes an incomplete habit on its archive day")
-    func excludesIncompleteHabitOnArchiveDay() async throws {
+    @Test("keeps an included archive day tracked after its completion is canceled")
+    func keepsIncludedArchiveDayTrackedWithoutCompletion() async throws {
         let archiveDay = try day(2026, 8, 18)
         let habit = try makeHabit(
             name: "Read",
             startedOn: try archiveDay.addingDays(-1),
             archivedOn: archiveDay
+        )
+        let useCase = try makeUseCase(
+            habits: [habit],
+            referenceDay: try archiveDay.addingDays(1)
+        )
+
+        let entries = try await useCase.execute(on: archiveDay)
+
+        #expect(entries.map(\.state) == [.missed])
+    }
+
+    @Test("excludes an archive date that was outside the fixed period")
+    func excludesArchiveDayOutsideFixedTrackingPeriod() async throws {
+        let archiveDay = try day(2026, 8, 18)
+        let habit = try makeHabit(
+            name: "Read",
+            startedOn: try archiveDay.addingDays(-1),
+            archivedOn: try archiveDay.addingDays(-1)
         )
         let useCase = try makeUseCase(
             habits: [habit],

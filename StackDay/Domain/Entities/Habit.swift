@@ -24,7 +24,10 @@ struct Habit: Equatable, Identifiable {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { throw HabitError.emptyName }
         if let archivedOn, archivedOn < startedOn {
-            throw HabitError.archiveBeforeStart
+            let dayBeforeStart = try startedOn.addingDays(-1)
+            guard archivedOn == dayBeforeStart else {
+                throw HabitError.archiveBeforeStart
+            }
         }
         self.id = id
         self.name = trimmedName
@@ -34,10 +37,19 @@ struct Habit: Equatable, Identifiable {
         self.updatedAt = updatedAt ?? createdAt
     }
 
-    mutating func archive(on day: LocalDay, updatedAt date: Date) throws {
+    mutating func archive(
+        on archiveActionDay: LocalDay,
+        effectiveArchivedOn: LocalDay,
+        updatedAt date: Date
+    ) throws {
         guard archivedOn == nil else { throw HabitError.alreadyArchived }
-        if day < startedOn { throw HabitError.archiveBeforeStart }
-        archivedOn = day
+        if archiveActionDay < startedOn { throw HabitError.archiveBeforeStart }
+        let dayBeforeArchiveAction = try archiveActionDay.addingDays(-1)
+        guard effectiveArchivedOn == archiveActionDay ||
+                effectiveArchivedOn == dayBeforeArchiveAction else {
+            throw HabitError.invalidArchiveTrackingBoundary
+        }
+        archivedOn = effectiveArchivedOn
         updatedAt = date
     }
     
@@ -53,23 +65,10 @@ struct Habit: Equatable, Identifiable {
         }
     }
 
-    func isTracked(
-        on targetDate: LocalDay,
-        hasCompletionOnArchiveDay: Bool
-    ) -> Bool {
+    func isTracked(on targetDate: LocalDay) -> Bool {
         guard targetDate >= startedOn else { return false }
         guard let archivedOn else { return true }
-        guard targetDate <= archivedOn else { return false }
-        return targetDate < archivedOn || hasCompletionOnArchiveDay
-    }
-
-    func finalTrackingDate(
-        hasCompletionOnArchiveDate: Bool
-    ) throws -> LocalDay? {
-        guard let archivedOn else { return nil }
-        return hasCompletionOnArchiveDate
-            ? archivedOn
-            : try archivedOn.addingDays(-1)
+        return targetDate <= archivedOn
     }
 }
 
@@ -77,6 +76,7 @@ enum HabitError: Error, Equatable {
     case emptyName
     case archiveBeforeStart
     case alreadyArchived
+    case invalidArchiveTrackingBoundary
 }
 
 enum HabitDateError: Error, Equatable {

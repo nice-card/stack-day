@@ -69,7 +69,7 @@ struct LoadMonthlyEntriesUseCaseTests {
         let archiveDay = try day(2026, 8, 19)
         let habit = try makeHabit(
             startedOn: startDay,
-            archivedOn: archiveDay
+            archivedOn: try archiveDay.addingDays(-1)
         )
         let useCase = try makeUseCase(
             habits: [habit],
