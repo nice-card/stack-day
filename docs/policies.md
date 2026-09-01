@@ -43,12 +43,14 @@ follow. It describes behavior, not a particular type or storage framework.
 ## Habit lifecycle
 
 - Archiving removes a habit from Today and stops future recording.
-- The archive date is included in a habit's tracking period only when it has a
-  completion. If it has no completion, tracking ends on the preceding day.
+- At archive time, the effective tracking boundary is fixed. The archive date
+  is included when it has a completion at that time; otherwise tracking ends
+  on the preceding day.
 - Existing history and derived statistics remain available after archiving.
-- Past records before or on the archive date can still be added or canceled
-  after archiving. Changing a completion on the archive date recalculates the
-  tracking period and derived statistics.
+- Completion records can be added or canceled only within the fixed tracking
+  period. An archive date that was incomplete when archived remains outside
+  that period, while an archive date that was complete when archived remains
+  inside it even if its completion is later canceled.
 - Deleting a habit permanently deletes it and its related completion records.
 
 ## Heatmap
