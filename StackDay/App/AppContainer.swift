@@ -71,6 +71,10 @@ final class AppContainer {
             timeZone: timeZone
         )
     }
+    
+    func makeLoadHabitDetailUseCase() -> LoadHabitDetailUseCase {
+        LoadHabitDetailUseCase(habitRepository: habitRepository)
+    }
 
     func makeRecordCompletionUseCase() -> RecordCompletionUseCase {
         RecordCompletionUseCase(
