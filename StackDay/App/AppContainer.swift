@@ -102,7 +102,8 @@ final class AppContainer {
             loadDayEntriesUseCase: makeLoadDayEntriesUseCase(),
             recordCompletionUseCase: makeRecordCompletionUseCase(),
             cancelCompletionUseCase: makeCancelCompletionUseCase(),
-            createHabitUseCase: makeCreateHabitUseCase()
+            createHabitUseCase: makeCreateHabitUseCase(),
+            loadHabitDetailUseCase: makeLoadHabitDetailUseCase()
         )
     }
 }

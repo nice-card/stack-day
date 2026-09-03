@@ -6,9 +6,8 @@
 import SwiftUI
 
 struct DayView: View {
-    @State private var isShowingAddHabit = false
-
     private let viewModel: DayViewModel
+    @State private var isShowingAddHabit = false
 
     init(viewModel: DayViewModel) {
         self.viewModel = viewModel
@@ -67,6 +66,28 @@ struct DayView: View {
                     await viewModel.habitCreated(name: name)
                     isShowingAddHabit = false
                 }
+            }
+        }
+        .sheet(
+            item: Binding(
+                get: { viewModel.selectedHabit },
+                set: { habit in
+                    if habit == nil {
+                        viewModel.dismissHabitDetail()
+                    }
+                }
+            )
+        ) { habit in
+            if let entry = viewModel.entries.first(where: { $0.habitID == habit.id }) {
+                HabitDetailView(
+                    habit: habit,
+                    completionState: entry.state,
+                    onCompletionTap: {
+                        Task {
+                            await viewModel.entryTapped(entry)
+                        }
+                    }
+                )
             }
         }
         .alert(
@@ -134,11 +155,19 @@ struct DayView: View {
     @ViewBuilder
     private func entryRows(_ entries: [HabitEntry]) -> some View {
         ForEach(entries, id: \.habitID) { entry in
-            EntryRow(entry: entry) {
-                Task {
-                    await viewModel.entryTapped(entry)
+            EntryRow(
+                entry: entry,
+                onCompletionTap: {
+                    Task {
+                        await viewModel.entryTapped(entry)
+                    }
+                },
+                onDetailTap: {
+                    Task {
+                        await viewModel.habitDetailRequested(for: entry)
+                    }
                 }
-            }
+            )
             .listRowSeparator(.hidden)
         }
     }

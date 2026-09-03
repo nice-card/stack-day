@@ -2,11 +2,25 @@ import SwiftUI
 
 struct EntryRow: View {
     let entry: HabitEntry
-    let onTap: () -> Void
+    let onCompletionTap: () -> Void
+    let onDetailTap: () -> Void
 
     var body: some View {
-        HStack {
-            Button(action: onTap) {
+        Button(action: onDetailTap) {
+            HStack {
+                Color.clear
+                    .frame(width: 44, height: 44)
+                Text(entry.habitName)
+                    .foregroundStyle(.primary)
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(entry.habitName) details")
+        .overlay(alignment: .leading) {
+            Button(action: onCompletionTap) {
                 Image(systemName: iconName)
                     .font(.title2)
                     .foregroundStyle(color)
@@ -14,17 +28,7 @@ struct EntryRow: View {
             }
             .buttonStyle(.plain)
             .disabled(entry.state == .future)
-            Text(entry.habitName)
-                .foregroundStyle(.primary)
-            Spacer()
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 4)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(entry.habitName), \(stateLabel)")
     }
 
     private var stateLabel: String {

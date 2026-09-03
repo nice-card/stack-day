@@ -95,6 +95,22 @@ struct DayViewModelTests {
         #expect(viewModel.entries.first?.state == .missed)
     }
 
+    @Test("requesting habit detail loads the habit for the selected entry")
+    func requestingHabitDetailLoadsHabit() async throws {
+        let selectedDay = try day(2026, 8, 19)
+        let habit = try makeHabit(startedOn: selectedDay)
+        let viewModel = try await makeViewModel(
+            selectedDay: selectedDay,
+            habits: [habit]
+        )
+        await viewModel.viewAppeared()
+        let entry = try #require(viewModel.entries.first)
+
+        await viewModel.habitDetailRequested(for: entry)
+
+        #expect(viewModel.selectedHabit == habit)
+    }
+
     private let now = Date(timeIntervalSince1970: 1_787_126_400)
 
     private func makeViewModel(
@@ -135,6 +151,9 @@ struct DayViewModelTests {
             createHabitUseCase: CreateHabitUseCase(
                 repository: habitRepository,
                 clock: clock
+            ),
+            loadHabitDetailUseCase: LoadHabitDetailUseCase(
+                habitRepository: habitRepository
             )
         )
     }
