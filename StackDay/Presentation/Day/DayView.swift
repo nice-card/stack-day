@@ -60,7 +60,7 @@ struct DayView: View {
                     .accessibilityLabel("Habit 추가")
             }
         }
-        .sheet(isPresented: $isShowingAddHabit) {
+        .fullScreenCover(isPresented: $isShowingAddHabit) {
             AddHabitView { name in
                 Task {
                     await viewModel.habitCreated(name: name)
