@@ -111,6 +111,24 @@ struct DayViewModelTests {
         #expect(viewModel.selectedHabit == habit)
     }
 
+    @Test("renaming a habit updates the detail and Today entry")
+    func renamingHabitUpdatesDetailAndEntries() async throws {
+        let selectedDay = try day(2026, 8, 19)
+        let habit = try makeHabit(startedOn: selectedDay)
+        let viewModel = try await makeViewModel(
+            selectedDay: selectedDay,
+            habits: [habit]
+        )
+        await viewModel.viewAppeared()
+        let entry = try #require(viewModel.entries.first)
+
+        await viewModel.habitDetailRequested(for: entry)
+        await viewModel.habitRenamed(habitID: habit.id, name: "  Exercise  ")
+
+        #expect(viewModel.selectedHabit?.name == "Exercise")
+        #expect(viewModel.entries.first?.habitName == "Exercise")
+    }
+
     private let now = Date(timeIntervalSince1970: 1_787_126_400)
 
     private func makeViewModel(
@@ -154,6 +172,10 @@ struct DayViewModelTests {
             ),
             loadHabitDetailUseCase: LoadHabitDetailUseCase(
                 habitRepository: habitRepository
+            ),
+            renameHabitUseCase: RenameHabitUseCase(
+                habitRepository: habitRepository,
+                clock: clock
             )
         )
     }

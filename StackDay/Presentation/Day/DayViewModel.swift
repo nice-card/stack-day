@@ -13,6 +13,7 @@ final class DayViewModel {
     private let cancelCompletionUseCase: CancelCompletionUseCase
     private let createHabitUseCase: CreateHabitUseCase
     private let loadHabitDetailUseCase: LoadHabitDetailUseCase
+    private let renameHabitUseCase: RenameHabitUseCase
     private(set) var selectedDay: LocalDay
     private(set) var entries: [HabitEntry] = []
     private(set) var isLoading = false
@@ -25,7 +26,8 @@ final class DayViewModel {
         recordCompletionUseCase: RecordCompletionUseCase,
         cancelCompletionUseCase: CancelCompletionUseCase,
         createHabitUseCase: CreateHabitUseCase,
-        loadHabitDetailUseCase: LoadHabitDetailUseCase
+        loadHabitDetailUseCase: LoadHabitDetailUseCase,
+        renameHabitUseCase: RenameHabitUseCase
     ) {
         self.selectedDay = selectedDay
         self.loadDayEntriesUseCase = loadDayEntriesUseCase
@@ -33,6 +35,7 @@ final class DayViewModel {
         self.cancelCompletionUseCase = cancelCompletionUseCase
         self.createHabitUseCase = createHabitUseCase
         self.loadHabitDetailUseCase = loadHabitDetailUseCase
+        self.renameHabitUseCase = renameHabitUseCase
     }
 
     func viewAppeared() async {
@@ -78,6 +81,16 @@ final class DayViewModel {
     func habitDetailRequested(for entry: HabitEntry) async {
         await perform {
             self.selectedHabit = try await self.loadHabitDetailUseCase.execute(id: entry.habitID)
+        }
+    }
+
+    func habitRenamed(habitID: Habit.ID, name: String) async {
+        await perform {
+            self.selectedHabit = try await self.renameHabitUseCase.execute(
+                habitID: habitID,
+                name: name
+            )
+            try await self.loadEntries()
         }
     }
 

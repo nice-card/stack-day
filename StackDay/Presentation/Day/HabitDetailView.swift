@@ -9,6 +9,7 @@ struct HabitDetailView: View {
     let habit: Habit
     let completionState: HabitEntry.State
     let onCompletionTap: () -> Void
+    let onNameSubmit: (String) -> Void
     
     @State private var isEditingName = false
     @State private var editedName: String
@@ -17,11 +18,13 @@ struct HabitDetailView: View {
     init(
         habit: Habit,
         completionState: HabitEntry.State,
-        onCompletionTap: @escaping () -> Void
+        onCompletionTap: @escaping () -> Void,
+        onNameSubmit: @escaping (String) -> Void
     ) {
         self.habit = habit
         self.completionState = completionState
         self.onCompletionTap = onCompletionTap
+        self.onNameSubmit = onNameSubmit
         _editedName = State(initialValue: habit.name)
     }
 
@@ -123,6 +126,7 @@ struct HabitDetailView: View {
     }
 
     private func saveEditedName() {
+        onNameSubmit(editedName)
         isNameFieldFocused = false
         isEditingName = false
     }

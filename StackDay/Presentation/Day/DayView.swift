@@ -86,6 +86,11 @@ struct DayView: View {
                         Task {
                             await viewModel.entryTapped(entry)
                         }
+                    },
+                    onNameSubmit: { name in
+                        Task {
+                            await viewModel.habitRenamed(habitID: habit.id, name: name)
+                        }
                     }
                 )
             }
