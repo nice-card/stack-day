@@ -7,7 +7,7 @@ import Foundation
 
 struct Habit: Equatable, Identifiable {
     let id: UUID
-    let name: String
+    private(set) var name: String
     let startedOn: LocalDay
     private(set) var archivedOn: LocalDay?
     let createdAt: Date
@@ -50,6 +50,14 @@ struct Habit: Equatable, Identifiable {
             throw HabitError.invalidArchiveTrackingBoundary
         }
         archivedOn = effectiveArchivedOn
+        updatedAt = date
+    }
+
+    mutating func rename(to name: String, updatedAt date: Date) throws {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else { throw HabitError.emptyName }
+
+        self.name = trimmedName
         updatedAt = date
     }
     

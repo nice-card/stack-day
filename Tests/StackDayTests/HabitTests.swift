@@ -38,6 +38,40 @@ struct HabitTests {
         }
     }
 
+    @Test("renames a habit, trims its name, and updates its timestamp")
+    func renamesHabit() throws {
+        let updatedAt = createdAt.addingTimeInterval(1)
+        var habit = try Habit(
+            name: "Read",
+            startedOn: makeStartedOn(),
+            createdAt: createdAt
+        )
+
+        try habit.rename(to: "  Exercise  ", updatedAt: updatedAt)
+
+        #expect(habit.name == "Exercise")
+        #expect(habit.updatedAt == updatedAt)
+    }
+
+    @Test("does not rename a habit to an empty name")
+    func rejectsEmptyRenamedName() throws {
+        var habit = try Habit(
+            name: "Read",
+            startedOn: makeStartedOn(),
+            createdAt: createdAt
+        )
+
+        #expect(throws: HabitError.emptyName) {
+            try habit.rename(
+                to: " \n\t ",
+                updatedAt: createdAt.addingTimeInterval(1)
+            )
+        }
+
+        #expect(habit.name == "Read")
+        #expect(habit.updatedAt == createdAt)
+    }
+
     @Test("rejects an archive date before the habit starts")
     func rejectsArchiveBeforeStart() throws {
         let startedOn = try makeStartedOn()

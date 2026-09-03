@@ -38,6 +38,13 @@ final class AppContainer {
         )
     }
 
+    func makeRenameHabitUseCase() -> RenameHabitUseCase {
+        RenameHabitUseCase(
+            habitRepository: habitRepository,
+            clock: clock
+        )
+    }
+
     func makeLoadHabitStatisticsUseCase() -> LoadHabitStatisticsUseCase {
         LoadHabitStatisticsUseCase(
             habitRepository: habitRepository,
