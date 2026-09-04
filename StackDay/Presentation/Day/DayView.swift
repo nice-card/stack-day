@@ -20,7 +20,7 @@ struct DayView: View {
             VStack(spacing: 0) {
             if viewModel.entries.isEmpty && !viewModel.isLoading {
                     ContentUnavailableView(
-                        "오늘의 Habit이 없어요",
+                        emptyStateTitle,
                         systemImage: "checkmark.circle",
                         description: Text("+ 버튼으로 Habit을 추가해보세요.")
                     )
@@ -128,6 +128,15 @@ struct DayView: View {
             return dayText
         }
         return viewModel.selectedDay == today ? "Today" : dayText
+    }
+
+    private var emptyStateTitle: String {
+        guard let today = try? LocalDay(date: Date(), timeZone: .current),
+              viewModel.selectedDay == today
+        else {
+            return "\(dayText)의 Habit이 없어요"
+        }
+        return "오늘의 Habit이 없어요"
     }
 
     private var pendingEntries: [HabitEntry] {
