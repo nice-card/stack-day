@@ -42,15 +42,19 @@ follow. It describes behavior, not a particular type or storage framework.
 
 ## Habit lifecycle
 
-- Archiving removes a habit from Today and stops future recording.
-- At archive time, the effective tracking boundary is fixed. The archive date
-  is included when it has a completion at that time; otherwise tracking ends
-  on the preceding day.
-- Existing history and derived statistics remain available after archiving.
-- Completion records can be added or canceled only within the fixed tracking
-  period. An archive date that was incomplete when archived remains outside
-  that period, while an archive date that was complete when archived remains
-  inside it even if its completion is later canceled.
+- A habit owns one or more non-overlapping tracking periods. The first period
+  starts when the habit is created.
+- Archiving ends the current period. The archive date is included when it has
+  a completion at that time; otherwise the period ends on the preceding day.
+- DayView shows an entry only for dates inside a tracking period. An incomplete
+  archive date is therefore absent from DayView; a completed archive date
+  remains visible for that date. Dates outside a tracking period cannot receive
+  completion records and are excluded from statistics.
+- Unarchiving starts a new tracking period on the current date. When that
+  would leave no excluded date between periods, the periods are merged instead.
+  Same-day archive and unarchive therefore leave no tracking-period history.
+- Existing completion history remains available. Statistics include only dates
+  in tracking periods.
 - Deleting a habit permanently deletes it and its related completion records.
 
 ## Heatmap
