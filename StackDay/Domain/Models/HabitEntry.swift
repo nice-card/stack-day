@@ -17,6 +17,7 @@ struct HabitEntry: Equatable {
     let habitName: String
     let targetDay: LocalDay
     let state: State
+    let isTracked: Bool
 
     init(
         habit: Habit,
@@ -27,6 +28,7 @@ struct HabitEntry: Equatable {
         habitID = habit.id
         habitName = habit.name
         self.targetDay = targetDay
+        isTracked = habit.isTracked(on: targetDay)
 
         if completion != nil {
             state = .completed

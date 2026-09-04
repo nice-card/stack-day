@@ -14,6 +14,9 @@ final class DayViewModel {
     private let createHabitUseCase: CreateHabitUseCase
     private let loadHabitDetailUseCase: LoadHabitDetailUseCase
     private let renameHabitUseCase: RenameHabitUseCase
+    private let archiveHabitUseCase: ArchiveHabitUseCase
+    private let unarchiveHabitUseCase: UnarchiveHabitUseCase
+    private let deleteHabitUseCase: DeleteHabitUseCase
     private(set) var selectedDay: LocalDay
     private(set) var entries: [HabitEntry] = []
     private(set) var isLoading = false
@@ -27,7 +30,10 @@ final class DayViewModel {
         cancelCompletionUseCase: CancelCompletionUseCase,
         createHabitUseCase: CreateHabitUseCase,
         loadHabitDetailUseCase: LoadHabitDetailUseCase,
-        renameHabitUseCase: RenameHabitUseCase
+        renameHabitUseCase: RenameHabitUseCase,
+        archiveHabitUseCase: ArchiveHabitUseCase,
+        unarchiveHabitUseCase: UnarchiveHabitUseCase,
+        deleteHabitUseCase: DeleteHabitUseCase
     ) {
         self.selectedDay = selectedDay
         self.loadDayEntriesUseCase = loadDayEntriesUseCase
@@ -36,6 +42,9 @@ final class DayViewModel {
         self.createHabitUseCase = createHabitUseCase
         self.loadHabitDetailUseCase = loadHabitDetailUseCase
         self.renameHabitUseCase = renameHabitUseCase
+        self.archiveHabitUseCase = archiveHabitUseCase
+        self.unarchiveHabitUseCase = unarchiveHabitUseCase
+        self.deleteHabitUseCase = deleteHabitUseCase
     }
 
     func viewAppeared() async {
@@ -90,6 +99,29 @@ final class DayViewModel {
                 habitID: habitID,
                 name: name
             )
+            try await self.loadEntries()
+        }
+    }
+
+    func habitArchived(habitID: Habit.ID) async {
+        await perform {
+            _ = try await self.archiveHabitUseCase.execute(habitID: habitID)
+            self.selectedHabit = nil
+            try await self.loadEntries()
+        }
+    }
+
+    func habitUnarchived(habitID: Habit.ID) async {
+        await perform {
+            self.selectedHabit = try await self.unarchiveHabitUseCase.execute(habitID: habitID)
+            try await self.loadEntries()
+        }
+    }
+
+    func habitDeleted(habitID: Habit.ID) async {
+        await perform {
+            try await self.deleteHabitUseCase.execute(habitID: habitID)
+            self.selectedHabit = nil
             try await self.loadEntries()
         }
     }

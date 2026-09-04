@@ -27,7 +27,7 @@ struct EntryRow: View {
                     .frame(width: 44, height: 44)
             }
             .buttonStyle(.plain)
-            .disabled(entry.state == .future)
+            .disabled(entry.state == .future || !entry.isTracked)
         }
     }
 

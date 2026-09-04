@@ -91,6 +91,21 @@ struct DayView: View {
                         Task {
                             await viewModel.habitRenamed(habitID: habit.id, name: name)
                         }
+                    },
+                    onArchive: {
+                        Task {
+                            await viewModel.habitArchived(habitID: habit.id)
+                        }
+                    },
+                    onUnarchive: {
+                        Task {
+                            await viewModel.habitUnarchived(habitID: habit.id)
+                        }
+                    },
+                    onDelete: {
+                        Task {
+                            await viewModel.habitDeleted(habitID: habit.id)
+                        }
                     }
                 )
             }
@@ -180,8 +195,8 @@ struct DayView: View {
                     Task {
                         await viewModel.habitDetailRequested(for: entry)
                     }
-                }
-            )
+                },
+                )
             .listRowSeparator(.hidden)
         }
     }

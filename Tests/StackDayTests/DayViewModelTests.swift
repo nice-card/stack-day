@@ -129,6 +129,42 @@ struct DayViewModelTests {
         #expect(viewModel.entries.first?.habitName == "Exercise")
     }
 
+    @Test("archiving an incomplete habit removes its archive-date entry")
+    func archivingHabitRemovesArchiveDateEntry() async throws {
+        let selectedDay = try day(2026, 8, 19)
+        let habit = try makeHabit(startedOn: selectedDay)
+        let viewModel = try await makeViewModel(
+            selectedDay: selectedDay,
+            habits: [habit]
+        )
+        await viewModel.viewAppeared()
+        let entry = try #require(viewModel.entries.first)
+        await viewModel.habitDetailRequested(for: entry)
+
+        await viewModel.habitArchived(habitID: habit.id)
+
+        #expect(viewModel.selectedHabit == nil)
+        #expect(viewModel.entries.isEmpty)
+    }
+
+    @Test("deleting a habit dismisses its detail and removes it from Today")
+    func deletingHabitDismissesDetailAndReloadsEntries() async throws {
+        let selectedDay = try day(2026, 8, 19)
+        let habit = try makeHabit(startedOn: selectedDay)
+        let viewModel = try await makeViewModel(
+            selectedDay: selectedDay,
+            habits: [habit]
+        )
+        await viewModel.viewAppeared()
+        let entry = try #require(viewModel.entries.first)
+        await viewModel.habitDetailRequested(for: entry)
+
+        await viewModel.habitDeleted(habitID: habit.id)
+
+        #expect(viewModel.selectedHabit == nil)
+        #expect(viewModel.entries.isEmpty)
+    }
+
     private let now = Date(timeIntervalSince1970: 1_787_126_400)
 
     private func makeViewModel(
@@ -176,6 +212,21 @@ struct DayViewModelTests {
             renameHabitUseCase: RenameHabitUseCase(
                 habitRepository: habitRepository,
                 clock: clock
+            ),
+            archiveHabitUseCase: ArchiveHabitUseCase(
+                habitRepository: habitRepository,
+                completionRepository: completionRepository,
+                clock: clock,
+                timeZone: .gmt
+            ),
+            unarchiveHabitUseCase: UnarchiveHabitUseCase(
+                habitRepository: habitRepository,
+                clock: clock,
+                timeZone: .gmt
+            ),
+            deleteHabitUseCase: DeleteHabitUseCase(
+                habitRepository: habitRepository,
+                completionRepository: completionRepository
             )
         )
     }

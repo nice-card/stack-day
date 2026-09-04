@@ -10,21 +10,32 @@ struct HabitDetailView: View {
     let completionState: HabitEntry.State
     let onCompletionTap: () -> Void
     let onNameSubmit: (String) -> Void
+    let onArchive: () -> Void
+    let onUnarchive: () -> Void
+    let onDelete: () -> Void
     
     @State private var isEditingName = false
     @State private var editedName: String
+    @State private var isShowingArchiveConfirmation = false
+    @State private var isShowingDeleteConfirmation = false
     @FocusState private var isNameFieldFocused: Bool
 
     init(
         habit: Habit,
         completionState: HabitEntry.State,
         onCompletionTap: @escaping () -> Void,
-        onNameSubmit: @escaping (String) -> Void
+        onNameSubmit: @escaping (String) -> Void,
+        onArchive: @escaping () -> Void,
+        onUnarchive: @escaping () -> Void,
+        onDelete: @escaping () -> Void
     ) {
         self.habit = habit
         self.completionState = completionState
         self.onCompletionTap = onCompletionTap
         self.onNameSubmit = onNameSubmit
+        self.onArchive = onArchive
+        self.onUnarchive = onUnarchive
+        self.onDelete = onDelete
         _editedName = State(initialValue: habit.name)
     }
 
@@ -46,6 +57,26 @@ struct HabitDetailView: View {
                         title: "Repeat",
                         value: "매일"
                     )
+                    Divider()
+                    actionRow(
+                        icon: habit.isArchived ? "arrow.uturn.backward" : "archivebox",
+                        title: habit.isArchived ? "Unarchive Habit" : "Archive Habit",
+                        role: nil
+                    ) {
+                        if habit.isArchived {
+                            onUnarchive()
+                        } else {
+                            isShowingArchiveConfirmation = true
+                        }
+                    }
+                    Divider()
+                    actionRow(
+                        icon: "trash",
+                        title: "Delete Habit",
+                        role: .destructive
+                    ) {
+                        isShowingDeleteConfirmation = true
+                    }
                     Spacer(minLength: 0)
                 }
                 .padding(.horizontal, 20)
@@ -55,6 +86,24 @@ struct HabitDetailView: View {
             .background(Color(.systemBackground))
             .navigationTitle("Details")
             .navigationBarTitleDisplayMode(.inline)
+            .alert(
+                "Archive Habit?",
+                isPresented: $isShowingArchiveConfirmation
+            ) {
+                Button("Archive", role: .destructive, action: onArchive)
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Completion tracking pauses until you unarchive this habit.")
+            }
+            .alert(
+                "Delete Habit?",
+                isPresented: $isShowingDeleteConfirmation
+            ) {
+                Button("Delete", role: .destructive, action: onDelete)
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This permanently deletes the habit and its completion history.")
+            }
         }
     }
 
@@ -67,7 +116,7 @@ struct HabitDetailView: View {
                     .frame(width: 44, height: 44)
             }
             .buttonStyle(.plain)
-            .disabled(completionState == .future)
+            .disabled(completionState == .future || habit.isArchived)
             .accessibilityLabel("Toggle completion")
             TextField("Habit name", text: $editedName)
                 .font(.title2.weight(.medium))
@@ -110,6 +159,28 @@ struct HabitDetailView: View {
             Spacer()
         }
         .padding(.vertical, 18)
+    }
+
+    private func actionRow(
+        icon: String,
+        title: String,
+        role: ButtonRole?,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(role: role, action: action) {
+            HStack(spacing: 18) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .frame(width: 40, height: 40)
+                    .accessibilityHidden(true)
+
+                Text(title)
+                Spacer()
+            }
+            .padding(.vertical, 18)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var completionIconName: String {
