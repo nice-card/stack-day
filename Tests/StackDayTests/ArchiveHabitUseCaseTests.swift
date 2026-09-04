@@ -26,12 +26,12 @@ struct ArchiveHabitUseCaseTests {
         )
 
         let archivedHabit = try await useCase.execute(habitID: habit.id)
-        let expectedArchivedOn = try LocalDay(
+        let expectedPeriodEnd = try LocalDay(
             date: archivedAt,
             timeZone: .gmt
         )
 
-        #expect(archivedHabit.archivedOn == expectedArchivedOn)
+        #expect(archivedHabit.trackingPeriods.last?.endedOn == expectedPeriodEnd)
         #expect(archivedHabit.updatedAt == archivedAt)
         #expect(await repository.updated == [archivedHabit])
     }
@@ -49,12 +49,12 @@ struct ArchiveHabitUseCaseTests {
 
         let archivedHabit = try await useCase.execute(habitID: habit.id)
         let archiveDay = try LocalDay(date: archivedAt, timeZone: .gmt)
-        let expectedArchivedOn = try archiveDay.addingDays(-1)
+        let expectedPeriodEnd = try archiveDay.addingDays(-1)
 
-        #expect(archivedHabit.archivedOn == expectedArchivedOn)
+        #expect(archivedHabit.trackingPeriods.last?.endedOn == expectedPeriodEnd)
     }
 
-    @Test("allows an empty tracking period when archived on its start date incomplete")
+    @Test("leaves no tracking period when archived on its start date incomplete")
     func archivesStartDateWithoutCompletion() async throws {
         let archiveDay = try LocalDay(date: archivedAt, timeZone: .gmt)
         let habit = try makeHabit(startedOn: archiveDay)
@@ -66,9 +66,7 @@ struct ArchiveHabitUseCaseTests {
         )
 
         let archivedHabit = try await useCase.execute(habitID: habit.id)
-        let expectedArchivedOn = try archiveDay.addingDays(-1)
-
-        #expect(archivedHabit.archivedOn == expectedArchivedOn)
+        #expect(archivedHabit.trackingPeriods.isEmpty)
         #expect(archivedHabit.isTracked(on: archiveDay) == false)
     }
 
@@ -106,7 +104,7 @@ struct ArchiveHabitUseCaseTests {
             timeZone: .gmt
         )
 
-        await #expect(throws: HabitError.archiveBeforeStart) {
+        await #expect(throws: HabitError.archiveBeforeCurrentTrackingPeriod) {
             try await useCase.execute(habitID: habit.id)
         }
 

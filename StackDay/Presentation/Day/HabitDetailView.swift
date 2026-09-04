@@ -79,9 +79,13 @@ struct HabitDetailView: View {
     }
 
     private var trackingPeriod: String {
-        let start = formatted(habit.startedOn)
-        let end = habit.archivedOn.map(formatted) ?? ""
-        return "\(start) - \(end)"
+        guard !habit.trackingPeriods.isEmpty else {
+            return "No tracking days"
+        }
+
+        return habit.trackingPeriods
+            .map { "\(formatted($0.startedOn)) - \($0.endedOn.map(formatted) ?? "Present")" }
+            .joined(separator: ", ")
     }
 
     private func formatted(_ day: LocalDay) -> String {

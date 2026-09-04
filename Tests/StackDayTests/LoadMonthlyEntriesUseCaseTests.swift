@@ -40,7 +40,7 @@ struct LoadMonthlyEntriesUseCaseTests {
         let archiveDay = try day(2026, 8, 19)
         let habit = try makeHabit(
             startedOn: startDay,
-            archivedOn: archiveDay
+            endedOn: archiveDay
         )
         let useCase = try makeUseCase(
             habits: [habit],
@@ -69,7 +69,7 @@ struct LoadMonthlyEntriesUseCaseTests {
         let archiveDay = try day(2026, 8, 19)
         let habit = try makeHabit(
             startedOn: startDay,
-            archivedOn: try archiveDay.addingDays(-1)
+            endedOn: try archiveDay.addingDays(-1)
         )
         let useCase = try makeUseCase(
             habits: [habit],
@@ -157,7 +157,7 @@ struct LoadMonthlyEntriesUseCaseTests {
         let february1 = try day(2026, 2, 1)
         let habit = try makeHabit(
             startedOn: january31,
-            archivedOn: february1
+            endedOn: february1
         )
         let useCase = try makeUseCase(
             habits: [habit],
@@ -234,12 +234,14 @@ struct LoadMonthlyEntriesUseCaseTests {
     private func makeHabit(
         name: String = "Read",
         startedOn: LocalDay,
-        archivedOn: LocalDay? = nil
+        endedOn: LocalDay? = nil
     ) throws -> Habit {
         try Habit(
             name: name,
             startedOn: startedOn,
-            archivedOn: archivedOn,
+            trackingPeriods: [
+                try TrackingPeriod(startedOn: startedOn, endedOn: endedOn)
+            ],
             createdAt: now
         )
     }

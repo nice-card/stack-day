@@ -80,12 +80,12 @@ struct HabitEntryTests {
     @Test("allows an entry on the archived habit's final tracking date")
     func allowsArchiveDate() throws {
         let referenceDay = try makeReferenceDay()
-        let archivedOn = try referenceDay.addingDays(-1)
-        let habit = try makeHabit(archivedOn: archivedOn)
+        let periodEnd = try referenceDay.addingDays(-1)
+        let habit = try makeHabit(endedOn: periodEnd)
 
         let entry = try HabitEntry(
             habit: habit,
-            targetDay: archivedOn,
+            targetDay: periodEnd,
             completion: nil,
             referenceDay: referenceDay
         )
@@ -110,12 +110,14 @@ struct HabitEntryTests {
     }
 
     private func makeHabit(
-        archivedOn: LocalDay? = nil
+        endedOn: LocalDay? = nil
     ) throws -> Habit {
         try Habit(
             name: "Read",
             startedOn: makeStartDay(),
-            archivedOn: archivedOn,
+            trackingPeriods: [
+                try TrackingPeriod(startedOn: makeStartDay(), endedOn: endedOn)
+            ],
             createdAt: recordedAt
         )
     }

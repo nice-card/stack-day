@@ -76,7 +76,7 @@ struct LoadDayEntriesUseCaseTests {
         let archivedHabit = try makeHabit(
             name: "Journal",
             startedOn: dayBefore,
-            archivedOn: dayBefore
+            endedOn: dayBefore
         )
 
         let useCase = try makeUseCase(
@@ -100,7 +100,7 @@ struct LoadDayEntriesUseCaseTests {
         let habit = try makeHabit(
             name: "Read",
             startedOn: targetDay,
-            archivedOn: targetDay
+            endedOn: targetDay
         )
 
         let useCase = try makeUseCase(
@@ -126,7 +126,7 @@ struct LoadDayEntriesUseCaseTests {
         let habit = try makeHabit(
             name: "Read",
             startedOn: try archiveDay.addingDays(-1),
-            archivedOn: archiveDay
+            endedOn: archiveDay
         )
         let useCase = try makeUseCase(
             habits: [habit],
@@ -144,7 +144,7 @@ struct LoadDayEntriesUseCaseTests {
         let habit = try makeHabit(
             name: "Read",
             startedOn: try archiveDay.addingDays(-1),
-            archivedOn: try archiveDay.addingDays(-1)
+            endedOn: try archiveDay.addingDays(-1)
         )
         let useCase = try makeUseCase(
             habits: [habit],
@@ -209,12 +209,14 @@ struct LoadDayEntriesUseCaseTests {
     private func makeHabit(
         name: String,
         startedOn: LocalDay,
-        archivedOn: LocalDay? = nil
+        endedOn: LocalDay? = nil
     ) throws -> Habit {
         try Habit(
             name: name,
             startedOn: startedOn,
-            archivedOn: archivedOn,
+            trackingPeriods: [
+                try TrackingPeriod(startedOn: startedOn, endedOn: endedOn)
+            ],
             createdAt: now
         )
     }

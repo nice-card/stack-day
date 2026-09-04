@@ -9,7 +9,7 @@ struct Habit: Equatable, Identifiable {
     let id: UUID
     private(set) var name: String
     let startedOn: LocalDay
-    private(set) var archivedOn: LocalDay?
+    private(set) var trackingPeriods: [TrackingPeriod]
     let createdAt: Date
     private(set) var updatedAt: Date
 
@@ -17,22 +17,34 @@ struct Habit: Equatable, Identifiable {
         id: UUID = UUID(),
         name: String,
         startedOn: LocalDay,
-        archivedOn: LocalDay? = nil,
+        createdAt: Date,
+        updatedAt: Date? = nil
+    ) throws {
+        try self.init(
+            id: id,
+            name: name,
+            startedOn: startedOn,
+            trackingPeriods: [try TrackingPeriod(startedOn: startedOn)],
+            createdAt: createdAt,
+            updatedAt: updatedAt
+        )
+    }
+
+    init(
+        id: UUID = UUID(),
+        name: String,
+        startedOn: LocalDay,
+        trackingPeriods: [TrackingPeriod],
         createdAt: Date,
         updatedAt: Date? = nil
     ) throws {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { throw HabitError.emptyName }
-        if let archivedOn, archivedOn < startedOn {
-            let dayBeforeStart = try startedOn.addingDays(-1)
-            guard archivedOn == dayBeforeStart else {
-                throw HabitError.archiveBeforeStart
-            }
-        }
+        try Self.validate(periods: trackingPeriods)
         self.id = id
         self.name = trimmedName
         self.startedOn = startedOn
-        self.archivedOn = archivedOn
+        self.trackingPeriods = trackingPeriods
         self.createdAt = createdAt
         self.updatedAt = updatedAt ?? createdAt
     }
@@ -42,14 +54,43 @@ struct Habit: Equatable, Identifiable {
         effectiveArchivedOn: LocalDay,
         updatedAt date: Date
     ) throws {
-        guard archivedOn == nil else { throw HabitError.alreadyArchived }
-        if archiveActionDay < startedOn { throw HabitError.archiveBeforeStart }
+        guard var period = trackingPeriods.last, period.endedOn == nil else {
+            throw HabitError.alreadyArchived
+        }
+        guard archiveActionDay >= period.startedOn else {
+            throw HabitError.archiveBeforeCurrentTrackingPeriod
+        }
         let dayBeforeArchiveAction = try archiveActionDay.addingDays(-1)
         guard effectiveArchivedOn == archiveActionDay ||
                 effectiveArchivedOn == dayBeforeArchiveAction else {
             throw HabitError.invalidArchiveTrackingBoundary
         }
-        archivedOn = effectiveArchivedOn
+        if effectiveArchivedOn < period.startedOn {
+            trackingPeriods.removeLast()
+        } else {
+            try period.end(on: effectiveArchivedOn)
+            trackingPeriods[trackingPeriods.count - 1] = period
+        }
+        updatedAt = date
+    }
+
+    mutating func unarchive(on day: LocalDay, updatedAt date: Date) throws {
+        guard !trackingPeriods.isEmpty else {
+            trackingPeriods = [try TrackingPeriod(startedOn: day)]
+            updatedAt = date
+            return
+        }
+        guard var lastPeriod = trackingPeriods.last, let endedOn = lastPeriod.endedOn else {
+            throw HabitError.notArchived
+        }
+
+        let dayAfterEnd = try endedOn.addingDays(1)
+        if day <= dayAfterEnd {
+            try lastPeriod.reopen()
+            trackingPeriods[trackingPeriods.count - 1] = lastPeriod
+        } else {
+            trackingPeriods.append(try TrackingPeriod(startedOn: day))
+        }
         updatedAt = date
     }
 
@@ -63,32 +104,48 @@ struct Habit: Equatable, Identifiable {
     
     func validateRecordableDate(_ targetDate: LocalDay, referenceDay: LocalDay) throws {
         guard targetDate >= startedOn else {
-            throw HabitDateError.beforeHabitStart
+            throw HabitError.beforeHabitStart
         }
         guard targetDate <= referenceDay else {
-            throw HabitDateError.futureDate
+            throw HabitError.futureDate
         }
-        if let archivedOn, targetDate > archivedOn {
-            throw HabitDateError.afterHabitArchived
+        guard isTracked(on: targetDate) else {
+            throw HabitError.outsideTrackingPeriod
         }
     }
 
     func isTracked(on targetDate: LocalDay) -> Bool {
         guard targetDate >= startedOn else { return false }
-        guard let archivedOn else { return true }
-        return targetDate <= archivedOn
+        return trackingPeriods.contains { $0.contains(targetDate) }
+    }
+
+    var isArchived: Bool {
+        trackingPeriods.isEmpty || trackingPeriods.last?.endedOn != nil
+    }
+
+    private static func validate(periods: [TrackingPeriod]) throws {
+        for index in periods.indices.dropLast() {
+            guard let endedOn = periods[index].endedOn else {
+                throw HabitError.invalidTrackingPeriods
+            }
+            let nextStart = periods[index + 1].startedOn
+            let dayAfterEnd = try endedOn.addingDays(1)
+
+            guard dayAfterEnd < nextStart else {
+                throw HabitError.invalidTrackingPeriods
+            }
+        }
     }
 }
 
 enum HabitError: Error, Equatable {
     case emptyName
-    case archiveBeforeStart
     case alreadyArchived
     case invalidArchiveTrackingBoundary
-}
-
-enum HabitDateError: Error, Equatable {
+    case notArchived
+    case invalidTrackingPeriods
     case beforeHabitStart
     case futureDate
-    case afterHabitArchived
+    case outsideTrackingPeriod
+    case archiveBeforeCurrentTrackingPeriod
 }

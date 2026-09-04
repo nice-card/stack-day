@@ -110,7 +110,9 @@ struct RecordCompletionUseCaseTests {
         let habit = try Habit(
             name: "Read",
             startedOn: makeStartedOn(),
-            archivedOn: archiveDay,
+            trackingPeriods: [
+                try TrackingPeriod(startedOn: makeStartedOn(), endedOn: archiveDay)
+            ],
             createdAt: recordedAt
         )
         let completions = RecordingCompletionRepository()
@@ -134,7 +136,12 @@ struct RecordCompletionUseCaseTests {
         let habit = try Habit(
             name: "Read",
             startedOn: makeStartedOn(),
-            archivedOn: try archiveDay.addingDays(-1),
+            trackingPeriods: [
+                try TrackingPeriod(
+                    startedOn: makeStartedOn(),
+                    endedOn: try archiveDay.addingDays(-1)
+                )
+            ],
             createdAt: recordedAt
         )
         let completions = RecordingCompletionRepository()
@@ -144,7 +151,7 @@ struct RecordCompletionUseCaseTests {
         )
 
         await #expect(
-            throws: RecordCompletionError.invalidDate(.afterHabitArchived)
+            throws: RecordCompletionError.invalidDate(.outsideTrackingPeriod)
         ) {
             try await useCase.execute(
                 habitID: habit.id,
