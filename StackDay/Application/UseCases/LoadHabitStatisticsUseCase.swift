@@ -30,11 +30,35 @@ struct LoadHabitStatisticsUseCase {
 
         let completions = try await completionRepository.fetchAll(for: habit.id)
         let referenceDay = try LocalDay(date: clock.now, timeZone: timeZone)
-
-        return try HabitStatisticsCalculator().calculate(
-            habit: habit,
-            completions: completions,
+        let eligibleDays = try habit.trackingDays(through: referenceDay)
+        let eligibleDaySet = Set(eligibleDays)
+        let completedDays = Set(completions.map(\.completedOn))
+            .intersection(eligibleDaySet)
+        let totalCompletedDays = completedDays.count
+        let eligibleTrackingDays = eligibleDays.count
+        let calculator = HabitStatisticsCalculator()
+        let currentStreak = calculator.currentStreak(
+            eligibleDays: eligibleDays,
+            completedDays: completedDays,
             referenceDay: referenceDay
+        )
+        let longestStreak = calculator.longestStreak(
+            eligibleDays: eligibleDays,
+            completedDays: completedDays
+        )
+        let completionRate = calculator.completionRate(
+            completedDayCount: totalCompletedDays,
+            eligibleDayCount: eligibleTrackingDays
+        )
+
+        return HabitStatistics(
+            totalCompletedDays: totalCompletedDays,
+            eligibleTrackingDays: eligibleTrackingDays,
+            completionRate: completionRate,
+            streak: HabitStreak(
+                current: currentStreak,
+                longest: longestStreak
+            )
         )
     }
 }
