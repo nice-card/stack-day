@@ -8,12 +8,14 @@ import Foundation
 final class AppContainer {
     private let habitRepository: any HabitRepository
     private let completionRepository: any CompletionRepository
+    private let habitStatisticCalculator: HabitStatisticsCalculator
     private let clock: any Clock
     private let timeZone: TimeZone
 
     init() {
         habitRepository = InMemoryHabitRepository()
         completionRepository = InMemoryCompletionRepository()
+        habitStatisticCalculator = HabitStatisticsCalculator()
         clock = SystemClock()
         timeZone = .current
     }
@@ -75,6 +77,16 @@ final class AppContainer {
         LoadDayEntriesUseCase(
             habitRepository: habitRepository,
             completionRepository: completionRepository,
+            clock: clock,
+            timeZone: timeZone
+        )
+    }
+    
+    func makeLoadStatisticsOverviewUseCase() -> LoadStatisticsOverviewUseCase {
+        LoadStatisticsOverviewUseCase(
+            habitRepository: habitRepository,
+            completionRepository: completionRepository,
+            calculator: habitStatisticCalculator,
             clock: clock,
             timeZone: timeZone
         )
