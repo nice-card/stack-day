@@ -27,7 +27,7 @@ not implementation requirements.
 
 The MVP supports daily habits with a strict streak policy.
 
-- Create, rename, archive, and permanently delete habits
+- Create, rename, archive, unarchive, and permanently delete habits
 - View habits scheduled for today
 - Complete and uncomplete habits for today
 - Add or cancel completion records for past dates
@@ -37,7 +37,7 @@ The MVP supports daily habits with a strict streak policy.
 
 Future dates and dates before a habit's start date cannot be recorded or edited.
 
-Archived habits are removed from today's screen. Their existing records and derived statistics remain available, and completion records within their fixed past tracking period can still be added or canceled.
+Archived habits are removed from today's screen. Their existing records and derived statistics remain available, and completion records within their fixed past tracking period can still be added or canceled. Unarchiving resumes tracking from the current date, creating a new tracking period when needed.
 
 ## Core Flow
 
@@ -60,7 +60,6 @@ The following are outside the MVP:
 
 - Repeating habits on selected weekdays
 - Changing a habit's start date
-- Resuming archived habits and multiple tracking periods
 - Count-based, total-based, and timer-based habits
 - Protected streaks and no-streak mode
 - Cloud sync, social features, and reward systems

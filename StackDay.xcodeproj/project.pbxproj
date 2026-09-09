@@ -6,12 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		0DC0CAA6302D8B2F00DEF487 /* planning.md in Resources */ = {isa = PBXBuildFile; fileRef = 0DC0CAA2302D8B2F00DEF487 /* planning.md */; };
-		0DC0CAA7302D8B2F00DEF487 /* policies.md in Resources */ = {isa = PBXBuildFile; fileRef = 0DC0CAA3302D8B2F00DEF487 /* policies.md */; };
-		0DC0CAA8302D8B2F00DEF487 /* product.md in Resources */ = {isa = PBXBuildFile; fileRef = 0DC0CAA4302D8B2F00DEF487 /* product.md */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		0DC0CAB1302D8DF000DEF487 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -25,9 +19,6 @@
 /* Begin PBXFileReference section */
 		0D994EAE2FF29B14004C44C0 /* StackDay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StackDay.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0D994EBC2FF29F15004C44C0 /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
-		0DC0CAA2302D8B2F00DEF487 /* planning.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = planning.md; sourceTree = "<group>"; };
-		0DC0CAA3302D8B2F00DEF487 /* policies.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = policies.md; sourceTree = "<group>"; };
-		0DC0CAA4302D8B2F00DEF487 /* product.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = product.md; sourceTree = "<group>"; };
 		0DC0CAAD302D8DF000DEF487 /* StackDayTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StackDayTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0DC0CAC6302D921D00DEF487 /* StackDay.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = StackDay.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -36,6 +27,11 @@
 		0D994EB02FF29B14004C44C0 /* StackDay */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = StackDay;
+			sourceTree = "<group>";
+		};
+		0DB6D1B93053A8230013F3C7 /* docs */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = docs;
 			sourceTree = "<group>";
 		};
 		0DC0CAAE302D8DF000DEF487 /* Tests */ = {
@@ -67,7 +63,7 @@
 			isa = PBXGroup;
 			children = (
 				0DC0CAC6302D921D00DEF487 /* StackDay.xctestplan */,
-				0DC0CAA5302D8B2F00DEF487 /* docs */,
+				0DB6D1B93053A8230013F3C7 /* docs */,
 				0D994EBC2FF29F15004C44C0 /* AGENTS.md */,
 				0D994EB02FF29B14004C44C0 /* StackDay */,
 				0DC0CAAE302D8DF000DEF487 /* Tests */,
@@ -82,16 +78,6 @@
 				0DC0CAAD302D8DF000DEF487 /* StackDayTests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		0DC0CAA5302D8B2F00DEF487 /* docs */ = {
-			isa = PBXGroup;
-			children = (
-				0DC0CAA2302D8B2F00DEF487 /* planning.md */,
-				0DC0CAA3302D8B2F00DEF487 /* policies.md */,
-				0DC0CAA4302D8B2F00DEF487 /* product.md */,
-			);
-			path = docs;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -111,6 +97,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				0D994EB02FF29B14004C44C0 /* StackDay */,
+				0DB6D1B93053A8230013F3C7 /* docs */,
 			);
 			name = StackDay;
 			packageProductDependencies = (
@@ -186,9 +173,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0DC0CAA6302D8B2F00DEF487 /* planning.md in Resources */,
-				0DC0CAA7302D8B2F00DEF487 /* policies.md in Resources */,
-				0DC0CAA8302D8B2F00DEF487 /* product.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
