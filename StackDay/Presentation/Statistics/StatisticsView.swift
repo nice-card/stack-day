@@ -27,14 +27,14 @@ struct StatisticsView: View {
                     LazyVGrid(columns: gridColumns, spacing: 16) {
                         Section {
                             ForEach(viewModel.activeSummaries) { summary in
-                                HabitStatisticsSummaryCard(summary: summary)
+                                summaryLink(summary)
                             }
                         }
 
                         if !viewModel.archivedSummaries.isEmpty {
                             Section {
                                 ForEach(viewModel.archivedSummaries) { summary in
-                                    HabitStatisticsSummaryCard(summary: summary)
+                                    summaryLink(summary)
                                 }
                             } header: {
                                 Text("Archived")
@@ -66,11 +66,38 @@ struct StatisticsView: View {
             )
         }
         .task {
-            await viewModel.loadSummaries()
+            await viewModel.viewAppeared()
         }
     }
 
     private var gridColumns: [GridItem] {
         return [GridItem(.flexible()), GridItem(.flexible())]
+    }
+
+    private func summaryLink(_ summary: HabitStatisticsSummary) -> some View {
+        NavigationLink {
+            HabitStatisticsDetailView(
+                summary: summary,
+                statistics: viewModel.selectedHabitStatistics,
+                onAppear: {
+                    await viewModel.habitStatisticsDetailRequested(for: summary)
+                },
+                onArchive: {
+                    await viewModel.habitArchived(habitID: summary.id)
+                },
+                onUnarchive: {
+                    await viewModel.habitUnarchived(habitID: summary.id)
+                },
+                onDelete: {
+                    await viewModel.habitDeleted(habitID: summary.id)
+                },
+                onDisappear: {
+                    viewModel.dismissHabitStatisticsDetail()
+                }
+            )
+        } label: {
+            HabitStatisticsSummaryCard(summary: summary)
+        }
+        .buttonStyle(.plain)
     }
 }

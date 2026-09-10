@@ -134,7 +134,11 @@ final class AppContainer {
     @MainActor
     func makeStatisticsViewModel() -> StatisticsViewModel {
         StatisticsViewModel(
-            loadStatisticsOverviewUseCase: makeLoadStatisticsOverviewUseCase()
+            loadStatisticsOverviewUseCase: makeLoadStatisticsOverviewUseCase(),
+            loadHabitStatisticsUseCase: makeLoadHabitStatisticsUseCase(),
+            archiveHabitUseCase: makeArchiveHabitUseCase(),
+            unarchiveHabitUseCase: makeUnarchiveHabitUseCase(),
+            deleteHabitUseCase: makeDeleteHabitUseCase()
         )
     }
 
