@@ -9,21 +9,20 @@ import SwiftUI
 
 @main
 struct StackDayApp: App {
-    private let dayViewModelResult: Result<DayViewModel, Error>
+    private let rootTabViewModelResult: Result<RootTabViewModel, Error>
 
     init() {
         let container = AppContainer()
-        dayViewModelResult = Result {
-            try container.makeDayViewModel()
+        rootTabViewModelResult = Result {
+            try container.makeRootTabViewModel()
         }
     }
 
     var body: some Scene {
         WindowGroup {
-            switch dayViewModelResult {
-            case .success(let viewModel):
-                RootTabView(dayViewModel: viewModel)
-
+            switch rootTabViewModelResult {
+            case .success(let rootTabViewModel):
+                RootTabView(viewModel: rootTabViewModel)
             case .failure:
                 ContentUnavailableView(
                     "앱을 시작할 수 없습니다",
