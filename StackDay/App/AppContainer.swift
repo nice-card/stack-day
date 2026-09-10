@@ -81,7 +81,7 @@ final class AppContainer {
             timeZone: timeZone
         )
     }
-    
+
     func makeLoadStatisticsOverviewUseCase() -> LoadStatisticsOverviewUseCase {
         LoadStatisticsOverviewUseCase(
             habitRepository: habitRepository,
@@ -128,6 +128,21 @@ final class AppContainer {
             archiveHabitUseCase: makeArchiveHabitUseCase(),
             unarchiveHabitUseCase: makeUnarchiveHabitUseCase(),
             deleteHabitUseCase: makeDeleteHabitUseCase()
+        )
+    }
+
+    @MainActor
+    func makeStatisticsViewModel() -> StatisticsViewModel {
+        StatisticsViewModel(
+            loadStatisticsOverviewUseCase: makeLoadStatisticsOverviewUseCase()
+        )
+    }
+
+    @MainActor
+    func makeRootTabViewModel() throws -> RootTabViewModel {
+        RootTabViewModel(
+            dayViewModel: try makeDayViewModel(),
+            statisticsViewModel: makeStatisticsViewModel()
         )
     }
 }
