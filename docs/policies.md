@@ -67,6 +67,5 @@ follow. It describes behavior, not a particular type or storage framework.
 
 - Selected weekday schedules
 - Protected streaks or streak allowances
-- Resuming archived habits or multiple tracking periods
 - Count-based, total-based, and timer-based habits
 - Notifications, widgets, accounts, servers, cloud sync, and social features
