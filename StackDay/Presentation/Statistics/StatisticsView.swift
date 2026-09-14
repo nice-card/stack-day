@@ -79,6 +79,8 @@ struct StatisticsView: View {
             HabitStatisticsDetailView(
                 summary: summary,
                 statistics: viewModel.selectedHabitStatistics,
+                calendar: viewModel.selectedHabitMonthlyCalendar,
+                isLoading: viewModel.isLoading,
                 onAppear: {
                     await viewModel.habitStatisticsDetailRequested(for: summary)
                 },
@@ -90,6 +92,12 @@ struct StatisticsView: View {
                 },
                 onDelete: {
                     await viewModel.habitDeleted(habitID: summary.id)
+                },
+                onPreviousMonth: {
+                    await viewModel.previousCalendarMonthRequested(for: summary.id)
+                },
+                onNextMonth: {
+                    await viewModel.nextCalendarMonthRequested(for: summary.id)
                 },
                 onDisappear: {
                     viewModel.dismissHabitStatisticsDetail()

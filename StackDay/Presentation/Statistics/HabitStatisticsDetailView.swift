@@ -15,10 +15,14 @@ private struct StatisticMetric: Identifiable {
 struct HabitStatisticsDetailView: View {
     let summary: HabitStatisticsSummary
     let statistics: HabitStatistics?
+    let calendar: HabitMonthlyCalendar?
+    let isLoading: Bool
     let onAppear: () async -> Void
     let onArchive: () async -> Bool
     let onUnarchive: () async -> Bool
     let onDelete: () async -> Bool
+    let onPreviousMonth: () async -> Void
+    let onNextMonth: () async -> Void
     let onDisappear: () -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var isShowingArchiveConfirmation = false
@@ -26,10 +30,21 @@ struct HabitStatisticsDetailView: View {
 
     var body: some View {
         Group {
-            if let statistics {
+            if let statistics, let calendar {
                 let rows = metricRows(for: statistics)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 32) {
+                        HabitMonthlyCalendarView(
+                            calendarMonth: calendar,
+                            isMonthNavigationDisabled: isLoading,
+                            onPreviousMonth: {
+                                Task { await onPreviousMonth() }
+                            },
+                            onNextMonth: {
+                                Task { await onNextMonth() }
+                            }
+                        )
+
                         Grid(
                             alignment: .leading,
                             horizontalSpacing: 32,

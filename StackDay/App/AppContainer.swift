@@ -73,6 +73,15 @@ final class AppContainer {
         )
     }
 
+    func makeLoadHabitMonthlyCalendarUseCase() -> LoadHabitMonthlyCalendarUseCase {
+        LoadHabitMonthlyCalendarUseCase(
+            habitRepository: habitRepository,
+            completionRepository: completionRepository,
+            clock: clock,
+            timeZone: timeZone
+        )
+    }
+
     func makeLoadDayEntriesUseCase() -> LoadDayEntriesUseCase {
         LoadDayEntriesUseCase(
             habitRepository: habitRepository,
@@ -132,10 +141,18 @@ final class AppContainer {
     }
 
     @MainActor
-    func makeStatisticsViewModel() -> StatisticsViewModel {
-        StatisticsViewModel(
+    func makeStatisticsViewModel() throws -> StatisticsViewModel {
+        let today = try LocalDay(date: clock.now, timeZone: timeZone)
+        let initialCalendarMonth = try LocalDay(
+            year: today.year,
+            month: today.month,
+            day: 1
+        )
+        return StatisticsViewModel(
             loadStatisticsOverviewUseCase: makeLoadStatisticsOverviewUseCase(),
             loadHabitStatisticsUseCase: makeLoadHabitStatisticsUseCase(),
+            loadHabitMonthlyCalendarUseCase: makeLoadHabitMonthlyCalendarUseCase(),
+            initialCalendarMonth: initialCalendarMonth,
             archiveHabitUseCase: makeArchiveHabitUseCase(),
             unarchiveHabitUseCase: makeUnarchiveHabitUseCase(),
             deleteHabitUseCase: makeDeleteHabitUseCase()
@@ -146,7 +163,7 @@ final class AppContainer {
     func makeRootTabViewModel() throws -> RootTabViewModel {
         RootTabViewModel(
             dayViewModel: try makeDayViewModel(),
-            statisticsViewModel: makeStatisticsViewModel()
+            statisticsViewModel: try makeStatisticsViewModel()
         )
     }
 }

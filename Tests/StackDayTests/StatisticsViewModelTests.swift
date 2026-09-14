@@ -14,7 +14,7 @@ struct StatisticsViewModelTests {
     @Test("loads active habit summaries")
     func loadsActiveSummaries() async throws {
         let habit = try makeHabit(name: "Read", startedOn: try day(2026, 8, 19))
-        let viewModel = makeViewModel(habits: [habit])
+        let viewModel = try makeViewModel(habits: [habit])
 
         await viewModel.viewAppeared()
 
@@ -32,7 +32,7 @@ struct StatisticsViewModelTests {
             startedOn: try day(2026, 8, 18),
             endedOn: try day(2026, 8, 19)
         )
-        let viewModel = makeViewModel(habits: [activeHabit, archivedHabit])
+        let viewModel = try makeViewModel(habits: [activeHabit, archivedHabit])
 
         await viewModel.viewAppeared()
 
@@ -41,8 +41,8 @@ struct StatisticsViewModelTests {
     }
 
     @Test("keeps both summary sections empty when no habits exist")
-    func keepsSectionsEmptyWithoutSummaries() async {
-        let viewModel = makeViewModel()
+    func keepsSectionsEmptyWithoutSummaries() async throws {
+        let viewModel = try makeViewModel()
 
         await viewModel.viewAppeared()
 
@@ -68,6 +68,13 @@ struct StatisticsViewModelTests {
                 clock: FixedClock(now: now),
                 timeZone: .gmt
             ),
+            loadHabitMonthlyCalendarUseCase: LoadHabitMonthlyCalendarUseCase(
+                habitRepository: FailingHabitRepository(),
+                completionRepository: RecordingCompletionRepository(),
+                clock: FixedClock(now: now),
+                timeZone: .gmt
+            ),
+            initialCalendarMonth: try day(2026, 8, 1),
             archiveHabitUseCase: ArchiveHabitUseCase(
                 habitRepository: FailingHabitRepository(),
                 completionRepository: RecordingCompletionRepository(),
@@ -102,7 +109,7 @@ struct StatisticsViewModelTests {
             completedOn: startDay,
             recordedAt: now
         )
-        let viewModel = makeViewModel(habits: [habit], completions: [completion])
+        let viewModel = try makeViewModel(habits: [habit], completions: [completion])
 
         await viewModel.viewAppeared()
         let summary = try #require(viewModel.activeSummaries.first)
@@ -128,7 +135,7 @@ struct StatisticsViewModelTests {
     func clearsSelectedStatisticsWhenHabitDetailLoadingFails() async throws {
         let startDay = try day(2026, 8, 19)
         let habit = try makeHabit(name: "Read", startedOn: startDay)
-        let viewModel = makeViewModel(habits: [habit])
+        let viewModel = try makeViewModel(habits: [habit])
 
         await viewModel.viewAppeared()
         let summary = try #require(viewModel.activeSummaries.first)
@@ -177,10 +184,10 @@ struct StatisticsViewModelTests {
     private func makeViewModel(
         habits: [Habit] = [],
         completions: [Completion] = []
-    ) -> StatisticsViewModel {
+    ) throws -> StatisticsViewModel {
         let habitRepository = RecordingHabitRepository(habits: habits)
         let completionRepository = RecordingCompletionRepository(completions: completions)
-        return makeViewModel(
+        return try makeViewModel(
             habitRepository: habitRepository,
             completionRepository: completionRepository
         )
@@ -192,7 +199,7 @@ struct StatisticsViewModelTests {
         for habit in habits {
             try await habitRepository.insert(habit)
         }
-        return makeViewModel(
+        return try makeViewModel(
             habitRepository: habitRepository,
             completionRepository: completionRepository
         )
@@ -201,7 +208,7 @@ struct StatisticsViewModelTests {
     private func makeViewModel(
         habitRepository: any HabitRepository,
         completionRepository: any CompletionRepository
-    ) -> StatisticsViewModel {
+    ) throws -> StatisticsViewModel {
         let overviewUseCase = LoadStatisticsOverviewUseCase(
             habitRepository: habitRepository,
             completionRepository: completionRepository,
@@ -215,9 +222,17 @@ struct StatisticsViewModelTests {
             clock: FixedClock(now: now),
             timeZone: .gmt
         )
+        let calendarUseCase = LoadHabitMonthlyCalendarUseCase(
+            habitRepository: habitRepository,
+            completionRepository: completionRepository,
+            clock: FixedClock(now: now),
+            timeZone: .gmt
+        )
         return StatisticsViewModel(
             loadStatisticsOverviewUseCase: overviewUseCase,
             loadHabitStatisticsUseCase: detailUseCase,
+            loadHabitMonthlyCalendarUseCase: calendarUseCase,
+            initialCalendarMonth: try day(2026, 8, 1),
             archiveHabitUseCase: ArchiveHabitUseCase(
                 habitRepository: habitRepository,
                 completionRepository: completionRepository,
