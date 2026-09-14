@@ -12,9 +12,10 @@ struct StackDayApp: App {
     private let rootTabViewModelResult: Result<RootTabViewModel, Error>
 
     init() {
-        let container = AppContainer()
         rootTabViewModelResult = Result {
-            try container.makeRootTabViewModel()
+            let environment = try AppEnvironment()
+            let container = AppContainer(environment: environment)
+            return try container.makeRootTabViewModel()
         }
     }
 

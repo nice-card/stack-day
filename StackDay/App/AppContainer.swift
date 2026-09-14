@@ -12,12 +12,12 @@ final class AppContainer {
     private let clock: any Clock
     private let timeZone: TimeZone
 
-    init() {
-        habitRepository = InMemoryHabitRepository()
-        completionRepository = InMemoryCompletionRepository()
-        habitStatisticCalculator = HabitStatisticsCalculator()
-        clock = SystemClock()
-        timeZone = .current
+    init(environment: AppEnvironment) {
+        habitRepository = environment.habitRepository
+        completionRepository = environment.completionRepository
+        habitStatisticCalculator = environment.habitStatisticCalculator
+        clock = environment.clock
+        timeZone = environment.timeZone
     }
 
     func makeCreateHabitUseCase() -> CreateHabitUseCase {
