@@ -1,0 +1,30 @@
+{
+  "configurations" : [
+    {
+      "id" : "4DFA06C9-844D-40EC-AE04-740DA2B65E14",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:StackDay.xcodeproj",
+      "identifier" : "0D994EAD2FF29B14004C44C0",
+      "name" : "StackDay"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:StackDay.xcodeproj",
+        "identifier" : "0DC0CAAC302D8DF000DEF487",
+        "name" : "StackDayTests"
+      }
+    }
+  ],
+  "version" : 1
+}
