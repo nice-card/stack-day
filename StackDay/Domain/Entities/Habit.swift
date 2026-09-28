@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct Habit: Equatable {
+struct Habit: Equatable, Identifiable {
     let id: UUID
     let name: String
     let startedOn: Date
