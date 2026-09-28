@@ -8,7 +8,7 @@ import Testing
 @testable import StackDay
 
 struct DeleteHabitUseCaseTests {
-    private let startedOn = Date(timeIntervalSince1970: 1_000_000)
+    private let createdAt = Date(timeIntervalSince1970: 1_000_000)
 
     @Test("deletes a habit and all of its completion records")
     func deletesHabitAndCompletions() async throws {
@@ -19,7 +19,7 @@ struct DeleteHabitUseCaseTests {
             habitRepository: habits,
             completionRepository: completions
         )
-        
+
         try await useCase.execute(habitID: habit.id)
 
         #expect(await completions.deletedAll == [habit.id])
@@ -30,7 +30,10 @@ struct DeleteHabitUseCaseTests {
     func rejectsUnknownHabit() async {
         let habits = RecordingHabitRepository()
         let completions = RecordingCompletionRepository()
-        let useCase = DeleteHabitUseCase(habitRepository: habits, completionRepository: completions)
+        let useCase = DeleteHabitUseCase(
+            habitRepository: habits,
+            completionRepository: completions
+        )
 
         await #expect(throws: DeleteHabitError.habitNotFound) {
             try await useCase.execute(habitID: Habit.ID())
@@ -40,8 +43,19 @@ struct DeleteHabitUseCaseTests {
         #expect(await habits.deleted.isEmpty)
     }
 
-    private func makeHabit() throws -> Habit {
-        try Habit(name: "Read", startedOn: startedOn, createdAt: startedOn)
+    private func makeStartedOn() throws -> LocalDay {
+        try LocalDay(
+            year: 1970,
+            month: 1,
+            day: 12
+        )
     }
 
+    private func makeHabit() throws -> Habit {
+        try Habit(
+            name: "Read",
+            startedOn: makeStartedOn(),
+            createdAt: createdAt
+        )
+    }
 }

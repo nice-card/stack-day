@@ -8,26 +8,37 @@ import Testing
 @testable import StackDay
 
 struct ArchiveHabitUseCaseTests {
-    private let startedOn = Date(timeIntervalSince1970: 1_000_000)
-    private let archivedOn = Date(timeIntervalSince1970: 1_086_400)
+    private let archivedAt = Date(timeIntervalSince1970: 1_086_400)
 
     @Test("archives an existing habit at the injected current time")
     func archivesExistingHabit() async throws {
         let habit = try makeHabit()
         let repository = RecordingHabitRepository(habits: [habit])
-        let useCase = ArchiveHabitUseCase(repository: repository) { self.archivedOn }
+        let useCase = ArchiveHabitUseCase(
+            repository: repository,
+            clock: FixedClock(now: archivedAt),
+            timeZone: .gmt
+        )
 
         let archivedHabit = try await useCase.execute(habitID: habit.id)
+        let expectedArchivedOn = try LocalDay(
+            date: archivedAt,
+            timeZone: .gmt
+        )
 
-        #expect(archivedHabit.archivedOn == archivedOn)
-        #expect(archivedHabit.updatedAt == archivedOn)
+        #expect(archivedHabit.archivedOn == expectedArchivedOn)
+        #expect(archivedHabit.updatedAt == archivedAt)
         #expect(await repository.updated == [archivedHabit])
     }
 
     @Test("rejects an unknown habit without updating")
     func rejectsUnknownHabit() async {
         let repository = RecordingHabitRepository()
-        let useCase = ArchiveHabitUseCase(repository: repository) { self.archivedOn }
+        let useCase = ArchiveHabitUseCase(
+            repository: repository,
+            clock: FixedClock(now: archivedAt),
+            timeZone: .gmt
+        )
 
         await #expect(throws: ArchiveHabitError.habitNotFound) {
             try await useCase.execute(habitID: Habit.ID())
@@ -38,9 +49,19 @@ struct ArchiveHabitUseCaseTests {
 
     @Test("propagates domain validation and does not update")
     func propagatesDomainValidation() async throws {
-        let habit = try makeHabit()
+        let startedOn = try makeStartedOn()
+        let habit = try makeHabit(startedOn: startedOn)
         let repository = RecordingHabitRepository(habits: [habit])
-        let useCase = ArchiveHabitUseCase(repository: repository) { startedOn.addingTimeInterval(-1) }
+
+        let beforeStart = try startedOn
+            .startDate(in: .gmt)
+            .addingTimeInterval(-1)
+
+        let useCase = ArchiveHabitUseCase(
+            repository: repository,
+            clock: FixedClock(now: beforeStart),
+            timeZone: .gmt
+        )
 
         await #expect(throws: HabitError.archiveBeforeStart) {
             try await useCase.execute(habitID: habit.id)
@@ -49,8 +70,21 @@ struct ArchiveHabitUseCaseTests {
         #expect(await repository.updated.isEmpty)
     }
 
-    private func makeHabit() throws -> Habit {
-        try Habit(name: "Read", startedOn: startedOn, createdAt: startedOn)
+    private func makeStartedOn() throws -> LocalDay {
+        try LocalDay(
+            year: 1970,
+            month: 1,
+            day: 12
+        )
     }
 
+    private func makeHabit(
+        startedOn: LocalDay? = nil
+    ) throws -> Habit {
+        try Habit(
+            name: "Read",
+            startedOn: startedOn ?? makeStartedOn(),
+            createdAt: archivedAt
+        )
+    }
 }

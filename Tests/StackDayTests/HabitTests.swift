@@ -11,10 +11,11 @@ import Testing
 
 struct HabitTests {
     private let createdAt = Date(timeIntervalSince1970: 1_000_000)
-    private let startedOn = Date(timeIntervalSince1970: 1_086_400)
 
     @Test("trims the name when creating a habit")
     func trimsName() throws {
+        let startedOn = try makeStartedOn()
+
         let habit = try Habit(
             name: "  Read  ",
             startedOn: startedOn,
@@ -25,49 +26,84 @@ struct HabitTests {
     }
 
     @Test("rejects an empty name")
-    func rejectsEmptyName() {
+    func rejectsEmptyName() throws {
+        let startedOn = try makeStartedOn()
+
         #expect(throws: HabitError.emptyName) {
-            try Habit(name: " \n\t ", startedOn: startedOn, createdAt: createdAt)
+            try Habit(
+                name: " \n\t ",
+                startedOn: startedOn,
+                createdAt: createdAt
+            )
         }
     }
 
     @Test("rejects an archive date before the habit starts")
-    func rejectsArchiveBeforeStart() {
+    func rejectsArchiveBeforeStart() throws {
+        let startedOn = try makeStartedOn()
+        let archivedOn = try startedOn.addingDays(-1)
+
         #expect(throws: HabitError.archiveBeforeStart) {
             try Habit(
                 name: "Read",
                 startedOn: startedOn,
-                archivedOn: startedOn.addingTimeInterval(-86_400),
+                archivedOn: archivedOn,
                 createdAt: createdAt
             )
         }
     }
 
     @Test("archives a habit and updates its timestamp")
-    mutating func archivesHabit() throws {
-        var habit = try Habit(name: "Read", startedOn: startedOn, createdAt: createdAt)
-        let archivedOn = startedOn.addingTimeInterval(86_400)
+    func archivesHabit() throws {
+        let startedOn = try makeStartedOn()
+        let archivedOn = try startedOn.addingDays(1)
+        let updatedAt = createdAt.addingTimeInterval(1)
 
-        try habit.archive(on: archivedOn)
+        var habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            createdAt: createdAt
+        )
+
+        try habit.archive(
+            on: archivedOn,
+            updatedAt: updatedAt
+        )
 
         #expect(habit.archivedOn == archivedOn)
-        #expect(habit.updatedAt == archivedOn)
+        #expect(habit.updatedAt == updatedAt)
     }
 
     @Test("rejects archiving an archived habit")
     func rejectsArchivingAnArchivedHabit() throws {
-        var habit = try Habit(name: "Read", startedOn: startedOn, createdAt: createdAt)
-        let archivedOn = startedOn.addingTimeInterval(86_400)
+        let startedOn = try makeStartedOn()
+        let archivedOn = try startedOn.addingDays(1)
+        let secondArchiveDay = try archivedOn.addingDays(1)
 
-        try habit.archive(on: archivedOn)
+        var habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            createdAt: createdAt
+        )
+
+        try habit.archive(
+            on: archivedOn,
+            updatedAt: createdAt
+        )
 
         #expect(throws: HabitError.alreadyArchived) {
-            try habit.archive(on: archivedOn.addingTimeInterval(86_400))
+            try habit.archive(
+                on: secondArchiveDay,
+                updatedAt: createdAt
+            )
         }
     }
-    
+
     @Test("rejects dates before the habit starts")
     func rejectsDateBeforeHabitStart() throws {
+        let startedOn = try makeStartedOn()
+        let targetDay = try startedOn.addingDays(-1)
+
         let habit = try Habit(
             name: "Read",
             startedOn: startedOn,
@@ -75,33 +111,39 @@ struct HabitTests {
         )
 
         #expect(throws: HabitDateError.beforeHabitStart) {
-            try habit.validateDate(
-                startedOn.addingTimeInterval(-86_400),
-                referenceDate: startedOn
+            try habit.validateRecordableDate(
+                targetDay,
+                referenceDay: startedOn
             )
         }
     }
 
     @Test("rejects dates after the reference date")
     func rejectsFutureDate() throws {
+        let startedOn = try makeStartedOn()
+        let referenceDay = try startedOn.addingDays(1)
+        let futureDay = try referenceDay.addingDays(1)
+
         let habit = try Habit(
             name: "Read",
             startedOn: startedOn,
             createdAt: createdAt
         )
-        let referenceDate = startedOn.addingTimeInterval(86_400)
 
         #expect(throws: HabitDateError.futureDate) {
-            try habit.validateDate(
-                referenceDate.addingTimeInterval(86_400),
-                referenceDate: referenceDate
+            try habit.validateRecordableDate(
+                futureDay,
+                referenceDay: referenceDay
             )
         }
     }
 
     @Test("rejects dates after the habit is archived")
     func rejectsDateAfterArchive() throws {
-        let archivedOn = startedOn.addingTimeInterval(86_400)
+        let startedOn = try makeStartedOn()
+        let archivedOn = try startedOn.addingDays(1)
+        let dayAfterArchive = try archivedOn.addingDays(1)
+
         let habit = try Habit(
             name: "Read",
             startedOn: startedOn,
@@ -110,16 +152,18 @@ struct HabitTests {
         )
 
         #expect(throws: HabitDateError.afterHabitArchived) {
-            try habit.validateDate(
-                archivedOn.addingTimeInterval(86_400),
-                referenceDate: archivedOn.addingTimeInterval(86_400)
+            try habit.validateRecordableDate(
+                dayAfterArchive,
+                referenceDay: dayAfterArchive
             )
         }
     }
 
     @Test("allows the archived date as the final valid date")
     func allowsArchiveDate() throws {
-        let archivedOn = startedOn.addingTimeInterval(86_400)
+        let startedOn = try makeStartedOn()
+        let archivedOn = try startedOn.addingDays(1)
+
         let habit = try Habit(
             name: "Read",
             startedOn: startedOn,
@@ -128,10 +172,98 @@ struct HabitTests {
         )
 
         #expect(throws: Never.self) {
-            try habit.validateDate(
+            try habit.validateRecordableDate(
                 archivedOn,
-                referenceDate: archivedOn
+                referenceDay: archivedOn
             )
         }
+    }
+
+    @Test("tracks dates according to start and archive boundaries")
+    func tracksDatesAccordingToBoundaries() throws {
+        let startedOn = try makeStartedOn()
+        let archivedOn = try startedOn.addingDays(2)
+        let beforeStart = try startedOn.addingDays(-1)
+        let beforeArchive = try startedOn.addingDays(1)
+        let afterArchive = try archivedOn.addingDays(1)
+        let habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            archivedOn: archivedOn,
+            createdAt: createdAt
+        )
+
+        #expect(
+            habit.isTracked(
+                on: beforeStart,
+                hasCompletionOnArchiveDay: false
+            ) == false
+        )
+        #expect(
+            habit.isTracked(
+                on: beforeArchive,
+                hasCompletionOnArchiveDay: false
+            )
+        )
+        #expect(
+            habit.isTracked(
+                on: archivedOn,
+                hasCompletionOnArchiveDay: false
+            ) == false
+        )
+        #expect(
+            habit.isTracked(
+                on: archivedOn,
+                hasCompletionOnArchiveDay: true
+            )
+        )
+        #expect(
+            habit.isTracked(
+                on: afterArchive,
+                hasCompletionOnArchiveDay: true
+            ) == false
+        )
+    }
+
+    @Test("uses today as the effective end date for an active habit")
+    func returnsNilFinalTrackingDateForActiveHabit() throws {
+        let habit = try Habit(
+            name: "Read",
+            startedOn: makeStartedOn(),
+            createdAt: createdAt
+        )
+
+        #expect(
+            try habit.finalTrackingDate(
+                hasCompletionOnArchiveDate: false
+            ) == nil
+        )
+    }
+
+    @Test("uses the archive date only when it has a completion")
+    func calculatesFinalTrackingDateFromArchiveCompletion() throws {
+        let startedOn = try makeStartedOn()
+        let archivedOn = try startedOn.addingDays(2)
+        let habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            archivedOn: archivedOn,
+            createdAt: createdAt
+        )
+
+        let completedArchiveFinalDay = try habit.finalTrackingDate(
+            hasCompletionOnArchiveDate: true
+        )
+        let incompleteArchiveFinalDay = try habit.finalTrackingDate(
+            hasCompletionOnArchiveDate: false
+        )
+        let expectedIncompleteFinalDay = try archivedOn.addingDays(-1)
+
+        #expect(completedArchiveFinalDay == archivedOn)
+        #expect(incompleteArchiveFinalDay == expectedIncompleteFinalDay)
+    }
+
+    private func makeStartedOn() throws -> LocalDay {
+        try LocalDay(year: 2026, month: 8, day: 18)
     }
 }

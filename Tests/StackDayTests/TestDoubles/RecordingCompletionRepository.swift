@@ -25,7 +25,7 @@ actor RecordingCompletionRepository: CompletionRepository {
 
     func fetch(
         habitID: Habit.ID,
-        completedOn date: Date
+        completedOn date: LocalDay
     ) async throws -> Completion? {
         stored.first {
             $0.habitID == habitID &&

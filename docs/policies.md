@@ -10,6 +10,19 @@ follow. It describes behavior, not a particular type or storage framework.
 - Past completion records can be added or canceled.
 - A habit can have at most one completion for a given date.
 
+## Habit creation
+
+- A habit name is trimmed of leading and trailing whitespace and newlines, and
+  cannot be empty after trimming.
+- A habit starts on the date selected when it is created. A habit may be
+  created with a past or future start date.
+
+## Habit editing
+
+- The only editable habit definition in the MVP is its name.
+- Renaming follows the same trimming and non-empty validation as creation.
+- A habit's start date cannot be changed.
+
 ## Today
 
 - The Today screen shows habits scheduled for today.
@@ -30,9 +43,19 @@ follow. It describes behavior, not a particular type or storage framework.
 ## Habit lifecycle
 
 - Archiving removes a habit from Today and stops future recording.
+- The archive date is included in a habit's tracking period only when it has a
+  completion. If it has no completion, tracking ends on the preceding day.
 - Existing history and derived statistics remain available after archiving.
-- Past records within the tracking period can still be edited after archive.
+- Past records before or on the archive date can still be added or canceled
+  after archiving. Changing a completion on the archive date recalculates the
+  tracking period and derived statistics.
 - Deleting a habit permanently deletes it and its related completion records.
+
+## Heatmap
+
+- A monthly heatmap displays a cell for every date in the selected month.
+- Future dates and dates outside a habit's tracking period appear as empty
+  cells without a completion or missed state.
 
 ## Out of scope for the MVP
 

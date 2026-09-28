@@ -7,21 +7,20 @@ import Foundation
 
 struct CreateHabitUseCase {
     private let repository: any HabitRepository
-    private let now: () -> Date
+    private let clock: any Clock
 
-    init(repository: any HabitRepository, now: @escaping () -> Date = Date.init) {
+    init(repository: any HabitRepository, clock: any Clock) {
         self.repository = repository
-        self.now = now
+        self.clock = clock
     }
 
-    func execute(name: String, startedOn: Date) async throws -> Habit {
+    func execute(name: String, startedOn: LocalDay) async throws {
         let habit = try Habit(
             name: name,
             startedOn: startedOn,
-            createdAt: now()
+            createdAt: clock.now
         )
 
         try await repository.insert(habit)
-        return habit
     }
 }

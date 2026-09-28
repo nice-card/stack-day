@@ -9,15 +9,22 @@ import Testing
 
 struct CreateHabitUseCaseTests {
     private let createdAt = Date(timeIntervalSince1970: 1_000_000)
-    private let startedOn = Date(timeIntervalSince1970: 1_086_400)
 
     @Test("creates and persists a habit")
     func createsAndPersistsHabit() async throws {
+        let startedOn = try makeStartedOn()
         let repository = RecordingHabitRepository()
-        let useCase = CreateHabitUseCase(repository: repository) { self.createdAt }
+        let useCase = CreateHabitUseCase(
+            repository: repository,
+            clock: FixedClock(now: createdAt)
+        )
 
-        let habit = try await useCase.execute(name: "  Read  ", startedOn: startedOn)
+        try await useCase.execute(
+            name: "  Read  ",
+            startedOn: startedOn
+        )
 
+        let habit = try #require(await repository.inserted.first)
         #expect(habit.name == "Read")
         #expect(habit.startedOn == startedOn)
         #expect(habit.createdAt == createdAt)
@@ -25,15 +32,29 @@ struct CreateHabitUseCaseTests {
     }
 
     @Test("does not persist a habit when domain validation fails")
-    func doesNotPersistInvalidHabit() async {
+    func doesNotPersistInvalidHabit() async throws {
+        let startedOn = try makeStartedOn()
         let repository = RecordingHabitRepository()
-        let useCase = CreateHabitUseCase(repository: repository) { self.createdAt }
+        let useCase = CreateHabitUseCase(
+            repository: repository,
+            clock: FixedClock(now: createdAt)
+        )
 
         await #expect(throws: HabitError.emptyName) {
-            try await useCase.execute(name: " \n\t ", startedOn: startedOn)
+            try await useCase.execute(
+                name: " \n\t ",
+                startedOn: startedOn
+            )
         }
 
         #expect(await repository.inserted.isEmpty)
     }
 
+    private func makeStartedOn() throws -> LocalDay {
+        try LocalDay(
+            year: 1970,
+            month: 1,
+            day: 13
+        )
+    }
 }

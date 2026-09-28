@@ -10,26 +10,29 @@ struct HabitEntry: Equatable {
         case pending
         case completed
         case missed
+        case future
     }
 
     let habitID: UUID
-    let targetDate: Date
+    let habitName: String
+    let targetDay: LocalDay
     let state: State
 
     init(
         habit: Habit,
-        targetDate: Date,
+        targetDay: LocalDay,
         completion: Completion?,
-        referenceDate: Date
+        referenceDay: LocalDay
     ) throws {
-        try habit.validateDate(targetDate, referenceDate: referenceDate)
-
         habitID = habit.id
-        self.targetDate = targetDate
+        habitName = habit.name
+        self.targetDay = targetDay
 
         if completion != nil {
             state = .completed
-        } else if targetDate == referenceDate {
+        } else if targetDay > referenceDay {
+            state = .future
+        } else if targetDay == referenceDay {
             state = .pending
         } else {
             state = .missed
