@@ -39,7 +39,7 @@ struct RecordCompletionUseCase {
                 completedOn,
                 referenceDay: referenceDay
             )
-        } catch let error as HabitDateError {
+        } catch let error as HabitError {
             throw RecordCompletionError.invalidDate(error)
         }
 
@@ -62,6 +62,6 @@ struct RecordCompletionUseCase {
 
 enum RecordCompletionError: Error, Equatable {
     case habitNotFound
-    case invalidDate(HabitDateError)
+    case invalidDate(HabitError)
     case alreadyCompleted
 }

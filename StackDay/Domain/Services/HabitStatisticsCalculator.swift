@@ -11,37 +11,23 @@ struct HabitStatisticsCalculator {
         completions: [Completion],
         referenceDay: LocalDay
     ) throws -> HabitStatistics {
-        let startDay = habit.startedOn
-        let hasCompletionOnArchiveDay = habit.archivedOn.map { archiveDate in
-            completions.contains {
-                $0.habitID == habit.id && $0.completedOn == archiveDate
-            }
-        } ?? false
-        let finalTrackingDate = min(
-            referenceDay,
-            try habit.finalTrackingDate(
-                hasCompletionOnArchiveDate: hasCompletionOnArchiveDay
-            ) ?? referenceDay
-        )
-        let eligibleTrackingDays = try trackingDayCount(
-            from: startDay,
-            through: finalTrackingDate
-        )
-        let completedDays = completedDays(
-            for: habit,
-            in: completions,
-            from: startDay,
-            through: finalTrackingDate
-        )
+        let trackingDays = try trackingDays(for: habit, through: referenceDay)
+        let trackingDaySet = Set(trackingDays)
+        let eligibleTrackingDays = trackingDays.count
+        let completedDays = Set<LocalDay>(completions.compactMap { completion in
+            guard completion.habitID == habit.id,
+                  trackingDaySet.contains(completion.completedOn)
+            else { return nil }
+            return completion.completedOn
+        })
         let totalCompletedDays = completedDays.count
         let completionRate = eligibleTrackingDays == 0
             ? 0
             : Double(totalCompletedDays) / Double(eligibleTrackingDays)
-        let streak = try calculateStreak(
-            from: startDay,
-            through: finalTrackingDate,
-            referenceDay: referenceDay,
-            completedDays: completedDays
+        let streak = calculateStreak(
+            trackingDays: trackingDays,
+            completedDays: completedDays,
+            referenceDay: referenceDay
         )
 
         return HabitStatistics(
@@ -52,71 +38,49 @@ struct HabitStatisticsCalculator {
         )
     }
 
-    private func trackingDayCount(
-        from startDate: LocalDay,
-        through finalTrackingDate: LocalDay
-    ) throws -> Int {
-        guard startDate <= finalTrackingDate else { return 0 }
-        var count = 1
-        var date = startDate
-        while date < finalTrackingDate {
-            date = try date.addingDays(1)
-            count += 1
-        }
-        return count
-    }
-
     private func calculateStreak(
-        from startDate: LocalDay,
-        through finalTrackingDate: LocalDay,
-        referenceDay: LocalDay,
-        completedDays: Set<LocalDay>
-    ) throws -> HabitStreak {
-        guard startDate <= finalTrackingDate else {
-            return HabitStreak(current: 0, longest: 0)
-        }
-
+        trackingDays: [LocalDay],
+        completedDays: Set<LocalDay>,
+        referenceDay: LocalDay
+    ) -> HabitStreak {
         var longest = 0
         var consecutiveDays = 0
-        var date = startDate
-
-        while date <= finalTrackingDate {
+        for date in trackingDays {
             if completedDays.contains(date) {
                 consecutiveDays += 1
                 longest = max(longest, consecutiveDays)
             } else {
                 consecutiveDays = 0
             }
-            date = try date.addingDays(1)
+        }
+
+        let currentStreakDays: ArraySlice<LocalDay>
+        if trackingDays.last == referenceDay, !completedDays.contains(referenceDay) {
+            currentStreakDays = trackingDays.dropLast()
+        } else {
+            currentStreakDays = trackingDays[...]
         }
 
         var current = 0
-        var currentDate = finalTrackingDate
-        if finalTrackingDate == referenceDay, !completedDays.contains(referenceDay) {
-            currentDate = try currentDate.addingDays(-1)
-        }
-
-        while currentDate >= startDate, completedDays.contains(currentDate) {
+        for day in currentStreakDays.reversed() {
+            guard completedDays.contains(day) else { break }
             current += 1
-            currentDate = try currentDate.addingDays(-1)
         }
 
         return HabitStreak(current: current, longest: longest)
     }
 
-    private func completedDays(
-        for habit: Habit,
-        in completions: [Completion],
-        from startDate: LocalDay,
-        through finalTrackingDate: LocalDay
-    ) -> Set<LocalDay> {
-        Set(completions.compactMap { completion in
-            guard completion.habitID == habit.id else { return nil }
-            let completedDay = completion.completedOn
-            guard completedDay >= startDate, completedDay <= finalTrackingDate else {
-                return nil
+    private func trackingDays(for habit: Habit, through referenceDay: LocalDay) throws -> [LocalDay] {
+        var days: [LocalDay] = []
+        for period in habit.trackingPeriods {
+            guard period.startedOn <= referenceDay else { continue }
+            let end = min(period.endedOn ?? referenceDay, referenceDay)
+            var day = period.startedOn
+            while day <= end {
+                days.append(day)
+                day = try day.addingDays(1)
             }
-            return completedDay
-        })
+        }
+        return days
     }
 }

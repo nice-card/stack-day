@@ -104,13 +104,15 @@ struct RecordCompletionUseCaseTests {
         #expect(await completions.inserted.isEmpty)
     }
 
-    @Test("records a completion on an archive date")
-    func recordsCompletionOnArchiveDate() async throws {
+    @Test("records a completion on an archive date that is within the fixed period")
+    func recordsCompletionOnIncludedArchiveDate() async throws {
         let archiveDay = try makeReferenceDay()
         let habit = try Habit(
             name: "Read",
             startedOn: makeStartedOn(),
-            archivedOn: archiveDay,
+            trackingPeriods: [
+                try TrackingPeriod(startedOn: makeStartedOn(), endedOn: archiveDay)
+            ],
             createdAt: recordedAt
         )
         let completions = RecordingCompletionRepository()
@@ -126,6 +128,38 @@ struct RecordCompletionUseCaseTests {
 
         let completion = try #require(await completions.inserted.first)
         #expect(completion.completedOn == archiveDay)
+    }
+
+    @Test("rejects a completion on an archive date outside the fixed period")
+    func rejectsCompletionOnExcludedArchiveDate() async throws {
+        let archiveDay = try makeReferenceDay()
+        let habit = try Habit(
+            name: "Read",
+            startedOn: makeStartedOn(),
+            trackingPeriods: [
+                try TrackingPeriod(
+                    startedOn: makeStartedOn(),
+                    endedOn: try archiveDay.addingDays(-1)
+                )
+            ],
+            createdAt: recordedAt
+        )
+        let completions = RecordingCompletionRepository()
+        let useCase = makeUseCase(
+            habits: RecordingHabitRepository(habits: [habit]),
+            completions: completions
+        )
+
+        await #expect(
+            throws: RecordCompletionError.invalidDate(.outsideTrackingPeriod)
+        ) {
+            try await useCase.execute(
+                habitID: habit.id,
+                completedOn: archiveDay
+            )
+        }
+
+        #expect(await completions.inserted.isEmpty)
     }
 
     private func makeStartedOn() throws -> LocalDay {

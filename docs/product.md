@@ -37,7 +37,7 @@ The MVP supports daily habits with a strict streak policy.
 
 Future dates and dates before a habit's start date cannot be recorded or edited.
 
-Archived habits are removed from today's screen. Their existing records and derived statistics remain available, and completion records within their past tracking period can still be added or canceled.
+Archived habits are removed from today's screen. Their existing records and derived statistics remain available, and completion records within their fixed past tracking period can still be added or canceled.
 
 ## Core Flow
 

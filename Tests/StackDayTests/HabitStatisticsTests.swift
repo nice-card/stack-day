@@ -79,7 +79,7 @@ struct HabitStatisticsTests {
 
         let habit = try makeHabit(
             startedOn: startDay,
-            archivedOn: archiveDay
+            endedOn: archiveDay
         )
 
         let statistics = try HabitStatisticsCalculator().calculate(
@@ -106,7 +106,7 @@ struct HabitStatisticsTests {
         let archiveDay = try day(2026, 1, 2)
         let habit = try makeHabit(
             startedOn: startDay,
-            archivedOn: archiveDay
+            endedOn: try archiveDay.addingDays(-1)
         )
 
         let statistics = try HabitStatisticsCalculator().calculate(
@@ -169,6 +169,30 @@ struct HabitStatisticsTests {
         )
     }
 
+    @Test("ignores excluded dates between tracking periods when calculating streaks")
+    func streakIgnoresExcludedDatesBetweenTrackingPeriods() throws {
+        let firstDay = try day(2026, 1, 1)
+        let resumedDay = try day(2026, 1, 3)
+        let habit = try Habit(
+            name: "Read",
+            startedOn: firstDay,
+            trackingPeriods: [
+                try TrackingPeriod(startedOn: firstDay, endedOn: firstDay),
+                try TrackingPeriod(startedOn: resumedDay)
+            ],
+            createdAt: recordedAt
+        )
+
+        let statistics = try HabitStatisticsCalculator().calculate(
+            habit: habit,
+            completions: completions(for: habit, on: [firstDay, resumedDay]),
+            referenceDay: resumedDay
+        )
+
+        #expect(statistics.eligibleTrackingDays == 2)
+        #expect(statistics.streak == HabitStreak(current: 2, longest: 2))
+    }
+
     @Test("ends the current streak at a missed past eligible date")
     func pastMissEndsCurrentStreak() throws {
         let day1 = try day(2026, 1, 1)
@@ -227,7 +251,7 @@ struct HabitStatisticsTests {
 
         let habit = try makeHabit(
             startedOn: startDay,
-            archivedOn: archiveDay
+            endedOn: archiveDay
         )
 
         let statistics = try HabitStatisticsCalculator().calculate(
@@ -273,12 +297,14 @@ struct HabitStatisticsTests {
 
     private func makeHabit(
         startedOn: LocalDay,
-        archivedOn: LocalDay? = nil
+        endedOn: LocalDay? = nil
     ) throws -> Habit {
         try Habit(
             name: "Read",
             startedOn: startedOn,
-            archivedOn: archivedOn,
+            trackingPeriods: [
+                try TrackingPeriod(startedOn: startedOn, endedOn: endedOn)
+            ],
             createdAt: recordedAt
         )
     }

@@ -76,7 +76,7 @@ struct LoadDayEntriesUseCaseTests {
         let archivedHabit = try makeHabit(
             name: "Journal",
             startedOn: dayBefore,
-            archivedOn: dayBefore
+            endedOn: dayBefore
         )
 
         let useCase = try makeUseCase(
@@ -100,7 +100,7 @@ struct LoadDayEntriesUseCaseTests {
         let habit = try makeHabit(
             name: "Read",
             startedOn: targetDay,
-            archivedOn: targetDay
+            endedOn: targetDay
         )
 
         let useCase = try makeUseCase(
@@ -120,13 +120,31 @@ struct LoadDayEntriesUseCaseTests {
         #expect(entries.map(\.habitID) == [habit.id])
     }
 
-    @Test("excludes an incomplete habit on its archive day")
-    func excludesIncompleteHabitOnArchiveDay() async throws {
+    @Test("keeps an included archive day tracked after its completion is canceled")
+    func keepsIncludedArchiveDayTrackedWithoutCompletion() async throws {
         let archiveDay = try day(2026, 8, 18)
         let habit = try makeHabit(
             name: "Read",
             startedOn: try archiveDay.addingDays(-1),
-            archivedOn: archiveDay
+            endedOn: archiveDay
+        )
+        let useCase = try makeUseCase(
+            habits: [habit],
+            referenceDay: try archiveDay.addingDays(1)
+        )
+
+        let entries = try await useCase.execute(on: archiveDay)
+
+        #expect(entries.map(\.state) == [.missed])
+    }
+
+    @Test("excludes an archive date that was outside the fixed period")
+    func excludesArchiveDayOutsideFixedTrackingPeriod() async throws {
+        let archiveDay = try day(2026, 8, 18)
+        let habit = try makeHabit(
+            name: "Read",
+            startedOn: try archiveDay.addingDays(-1),
+            endedOn: try archiveDay.addingDays(-1)
         )
         let useCase = try makeUseCase(
             habits: [habit],
@@ -191,12 +209,14 @@ struct LoadDayEntriesUseCaseTests {
     private func makeHabit(
         name: String,
         startedOn: LocalDay,
-        archivedOn: LocalDay? = nil
+        endedOn: LocalDay? = nil
     ) throws -> Habit {
         try Habit(
             name: name,
             startedOn: startedOn,
-            archivedOn: archivedOn,
+            trackingPeriods: [
+                try TrackingPeriod(startedOn: startedOn, endedOn: endedOn)
+            ],
             createdAt: now
         )
     }

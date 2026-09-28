@@ -24,7 +24,16 @@ final class AppContainer {
 
     func makeArchiveHabitUseCase() -> ArchiveHabitUseCase {
         ArchiveHabitUseCase(
-            repository: habitRepository,
+            habitRepository: habitRepository,
+            completionRepository: completionRepository,
+            clock: clock,
+            timeZone: timeZone
+        )
+    }
+
+    func makeUnarchiveHabitUseCase() -> UnarchiveHabitUseCase {
+        UnarchiveHabitUseCase(
+            habitRepository: habitRepository,
             clock: clock,
             timeZone: timeZone
         )
@@ -34,6 +43,13 @@ final class AppContainer {
         DeleteHabitUseCase(
             habitRepository: habitRepository,
             completionRepository: completionRepository
+        )
+    }
+
+    func makeRenameHabitUseCase() -> RenameHabitUseCase {
+        RenameHabitUseCase(
+            habitRepository: habitRepository,
+            clock: clock
         )
     }
 
@@ -63,6 +79,10 @@ final class AppContainer {
             timeZone: timeZone
         )
     }
+    
+    func makeLoadHabitDetailUseCase() -> LoadHabitDetailUseCase {
+        LoadHabitDetailUseCase(habitRepository: habitRepository)
+    }
 
     func makeRecordCompletionUseCase() -> RecordCompletionUseCase {
         RecordCompletionUseCase(
@@ -90,7 +110,12 @@ final class AppContainer {
             loadDayEntriesUseCase: makeLoadDayEntriesUseCase(),
             recordCompletionUseCase: makeRecordCompletionUseCase(),
             cancelCompletionUseCase: makeCancelCompletionUseCase(),
-            createHabitUseCase: makeCreateHabitUseCase()
+            createHabitUseCase: makeCreateHabitUseCase(),
+            loadHabitDetailUseCase: makeLoadHabitDetailUseCase(),
+            renameHabitUseCase: makeRenameHabitUseCase(),
+            archiveHabitUseCase: makeArchiveHabitUseCase(),
+            unarchiveHabitUseCase: makeUnarchiveHabitUseCase(),
+            deleteHabitUseCase: makeDeleteHabitUseCase()
         )
     }
 }

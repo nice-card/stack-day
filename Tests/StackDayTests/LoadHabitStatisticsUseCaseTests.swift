@@ -62,7 +62,7 @@ struct LoadHabitStatisticsUseCaseTests {
         let afterArchiveDay = try day(2026, 8, 20)
         let habit = try makeHabit(
             startedOn: startDay,
-            archivedOn: archiveDay
+            endedOn: archiveDay
         )
         let completions = [startDay, archiveDay, afterArchiveDay].map {
             Completion(habitID: habit.id, completedOn: $0, recordedAt: now)
@@ -93,12 +93,14 @@ struct LoadHabitStatisticsUseCaseTests {
 
     private func makeHabit(
         startedOn: LocalDay,
-        archivedOn: LocalDay? = nil
+        endedOn: LocalDay? = nil
     ) throws -> Habit {
         try Habit(
             name: "Read",
             startedOn: startedOn,
-            archivedOn: archivedOn,
+            trackingPeriods: [
+                try TrackingPeriod(startedOn: startedOn, endedOn: endedOn)
+            ],
             createdAt: now
         )
     }

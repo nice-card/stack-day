@@ -6,9 +6,8 @@
 import SwiftUI
 
 struct DayView: View {
-    @State private var isShowingAddHabit = false
-
     private let viewModel: DayViewModel
+    @State private var isShowingAddHabit = false
 
     init(viewModel: DayViewModel) {
         self.viewModel = viewModel
@@ -21,7 +20,7 @@ struct DayView: View {
             VStack(spacing: 0) {
             if viewModel.entries.isEmpty && !viewModel.isLoading {
                     ContentUnavailableView(
-                        "오늘의 Habit이 없어요",
+                        emptyStateTitle,
                         systemImage: "checkmark.circle",
                         description: Text("+ 버튼으로 Habit을 추가해보세요.")
                     )
@@ -61,12 +60,54 @@ struct DayView: View {
                     .accessibilityLabel("Habit 추가")
             }
         }
-        .sheet(isPresented: $isShowingAddHabit) {
+        .fullScreenCover(isPresented: $isShowingAddHabit) {
             AddHabitView { name in
                 Task {
                     await viewModel.habitCreated(name: name)
                     isShowingAddHabit = false
                 }
+            }
+        }
+        .sheet(
+            item: Binding(
+                get: { viewModel.selectedHabit },
+                set: { habit in
+                    if habit == nil {
+                        viewModel.dismissHabitDetail()
+                    }
+                }
+            )
+        ) { habit in
+            if let entry = viewModel.entries.first(where: { $0.habitID == habit.id }) {
+                HabitDetailView(
+                    habit: habit,
+                    completionState: entry.state,
+                    onCompletionTap: {
+                        Task {
+                            await viewModel.entryTapped(entry)
+                        }
+                    },
+                    onNameSubmit: { name in
+                        Task {
+                            await viewModel.habitRenamed(habitID: habit.id, name: name)
+                        }
+                    },
+                    onArchive: {
+                        Task {
+                            await viewModel.habitArchived(habitID: habit.id)
+                        }
+                    },
+                    onUnarchive: {
+                        Task {
+                            await viewModel.habitUnarchived(habitID: habit.id)
+                        }
+                    },
+                    onDelete: {
+                        Task {
+                            await viewModel.habitDeleted(habitID: habit.id)
+                        }
+                    }
+                )
             }
         }
         .alert(
@@ -104,6 +145,15 @@ struct DayView: View {
         return viewModel.selectedDay == today ? "Today" : dayText
     }
 
+    private var emptyStateTitle: String {
+        guard let today = try? LocalDay(date: Date(), timeZone: .current),
+              viewModel.selectedDay == today
+        else {
+            return "\(dayText)의 Habit이 없어요"
+        }
+        return "오늘의 Habit이 없어요"
+    }
+
     private var pendingEntries: [HabitEntry] {
         viewModel.entries.filter { $0.state == .pending }
     }
@@ -134,11 +184,19 @@ struct DayView: View {
     @ViewBuilder
     private func entryRows(_ entries: [HabitEntry]) -> some View {
         ForEach(entries, id: \.habitID) { entry in
-            EntryRow(entry: entry) {
-                Task {
-                    await viewModel.entryTapped(entry)
-                }
-            }
+            EntryRow(
+                entry: entry,
+                onCompletionTap: {
+                    Task {
+                        await viewModel.entryTapped(entry)
+                    }
+                },
+                onDetailTap: {
+                    Task {
+                        await viewModel.habitDetailRequested(for: entry)
+                    }
+                },
+                )
             .listRowSeparator(.hidden)
         }
     }

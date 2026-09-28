@@ -107,7 +107,9 @@ struct CancelCompletionUseCaseTests {
         let habit = try Habit(
             name: "Read",
             startedOn: makeStartedOn(),
-            archivedOn: archiveDay,
+            trackingPeriods: [
+                try TrackingPeriod(startedOn: makeStartedOn(), endedOn: archiveDay)
+            ],
             createdAt: recordedAt
         )
         let completion = Completion(

@@ -36,7 +36,7 @@ struct CancelCompletionUseCase {
                 completedOn,
                 referenceDay: referenceDay
             )
-        } catch let error as HabitDateError {
+        } catch let error as HabitError {
             throw CancelCompletionError.invalidDate(error)
         }
 
@@ -53,6 +53,6 @@ struct CancelCompletionUseCase {
 
 enum CancelCompletionError: Error, Equatable {
     case habitNotFound
-    case invalidDate(HabitDateError)
+    case invalidDate(HabitError)
     case notCompleted
 }
