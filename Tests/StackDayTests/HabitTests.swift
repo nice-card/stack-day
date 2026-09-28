@@ -378,6 +378,106 @@ struct HabitTests {
         #expect(habit.trackingPeriods.last?.endedOn == expectedIncompleteFinalDay)
     }
 
+    @Test("returns days in an open tracking period through the reference day")
+    func returnsOpenTrackingPeriodDays() throws {
+        let startedOn = try makeStartedOn()
+        let referenceDay = try startedOn.addingDays(2)
+        let habit = try Habit(name: "Read", startedOn: startedOn, createdAt: createdAt)
+
+        let trackingDays = try habit.trackingDays(through: referenceDay)
+
+        #expect(trackingDays == [
+            startedOn,
+            try startedOn.addingDays(1),
+            referenceDay
+        ])
+    }
+
+    @Test("returns days in a closed tracking period through its end date")
+    func returnsClosedTrackingPeriodDays() throws {
+        let startedOn = try makeStartedOn()
+        let endedOn = try startedOn.addingDays(1)
+        let habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            trackingPeriods: [try TrackingPeriod(startedOn: startedOn, endedOn: endedOn)],
+            createdAt: createdAt
+        )
+
+        let trackingDays = try habit.trackingDays(through: try endedOn.addingDays(2))
+
+        #expect(trackingDays == [startedOn, endedOn])
+    }
+
+    @Test("returns no tracking days before the habit starts")
+    func returnsNoTrackingDaysBeforeStart() throws {
+        let startedOn = try makeStartedOn()
+        let habit = try Habit(name: "Read", startedOn: startedOn, createdAt: createdAt)
+
+        let trackingDays = try habit.trackingDays(through: try startedOn.addingDays(-1))
+
+        #expect(trackingDays.isEmpty)
+    }
+
+    @Test("excludes dates between tracking periods")
+    func excludesDaysBetweenTrackingPeriods() throws {
+        let startedOn = try makeStartedOn()
+        let firstPeriodEnd = try startedOn.addingDays(1)
+        let resumedOn = try startedOn.addingDays(3)
+        let habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            trackingPeriods: [
+                try TrackingPeriod(startedOn: startedOn, endedOn: firstPeriodEnd),
+                try TrackingPeriod(startedOn: resumedOn)
+            ],
+            createdAt: createdAt
+        )
+
+        let trackingDays = try habit.trackingDays(through: try resumedOn.addingDays(1))
+
+        #expect(trackingDays == [
+            startedOn,
+            firstPeriodEnd,
+            resumedOn,
+            try resumedOn.addingDays(1)
+        ])
+    }
+
+    @Test("excludes later tracking periods that start after the reference day")
+    func excludesLaterTrackingPeriodsAfterReferenceDay() throws {
+        let startedOn = try makeStartedOn()
+        let laterPeriodStart = try startedOn.addingDays(3)
+        let habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            trackingPeriods: [
+                try TrackingPeriod(startedOn: startedOn, endedOn: startedOn),
+                try TrackingPeriod(startedOn: laterPeriodStart)
+            ],
+            createdAt: createdAt
+        )
+
+        let trackingDays = try habit.trackingDays(through: try startedOn.addingDays(2))
+
+        #expect(trackingDays == [startedOn])
+    }
+
+    @Test("returns no tracking days without tracking periods")
+    func returnsNoTrackingDaysWithoutPeriods() throws {
+        let startedOn = try makeStartedOn()
+        let habit = try Habit(
+            name: "Read",
+            startedOn: startedOn,
+            trackingPeriods: [],
+            createdAt: createdAt
+        )
+
+        let trackingDays = try habit.trackingDays(through: try startedOn.addingDays(2))
+
+        #expect(trackingDays.isEmpty)
+    }
+
     private func makeStartedOn() throws -> LocalDay {
         try LocalDay(year: 2026, month: 8, day: 18)
     }

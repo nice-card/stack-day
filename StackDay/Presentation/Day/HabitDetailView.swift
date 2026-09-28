@@ -90,7 +90,7 @@ struct HabitDetailView: View {
                 "Archive Habit?",
                 isPresented: $isShowingArchiveConfirmation
             ) {
-                Button("Archive", role: .destructive, action: onArchive)
+                Button("Archive", action: onArchive)
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("Completion tracking pauses until you unarchive this habit.")

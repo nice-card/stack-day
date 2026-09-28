@@ -50,6 +50,25 @@ struct LocalDay: Equatable, Hashable, Codable {
         return try LocalDay(year: year, month: month, day: day)
     }
 
+    func addingMonths(_ value: Int) throws -> LocalDay {
+        let calendar = Self.gregorianCalendar(timeZone: .gmt)
+        let components = DateComponents(year: year, month: month, day: day)
+        guard let date = calendar.date(from: components) else {
+            throw LocalDayError.conversionFailed
+        }
+        guard let result = calendar.date(byAdding: .month, value: value, to: date) else {
+            throw LocalDayError.arithmeticFailed
+        }
+        let resolved = calendar.dateComponents([.year, .month, .day], from: result)
+        guard let year = resolved.year,
+              let month = resolved.month,
+              let day = resolved.day
+        else {
+            throw LocalDayError.conversionFailed
+        }
+        return try LocalDay(year: year, month: month, day: day)
+    }
+
     private static func gregorianCalendar(timeZone: TimeZone) -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = timeZone

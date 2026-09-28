@@ -21,10 +21,14 @@ struct LoadHabitStatisticsUseCaseTests {
 
         let statistics = try await useCase.execute(habitID: habit.id)
 
-        #expect(statistics.totalCompletedDays == 1)
-        #expect(statistics.eligibleTrackingDays == 2)
-        #expect(statistics.completionRate == 0.5)
-        #expect(statistics.streak == HabitStreak(current: 1, longest: 1))
+        #expect(
+            statistics == HabitStatistics(
+                totalCompletedDays: 1,
+                eligibleTrackingDays: 2,
+                completionRate: 0.5,
+                streak: HabitStreak(current: 1, longest: 1)
+            )
+        )
     }
 
     @Test("returns habit not found for an unknown habit")
@@ -52,11 +56,18 @@ struct LoadHabitStatisticsUseCaseTests {
 
         let statistics = try await useCase.execute(habitID: habit.id)
 
-        #expect(statistics.eligibleTrackingDays == 1)
+        #expect(
+            statistics == HabitStatistics(
+                totalCompletedDays: 0,
+                eligibleTrackingDays: 1,
+                completionRate: 0,
+                streak: HabitStreak(current: 0, longest: 0)
+            )
+        )
     }
 
-    @Test("uses the calculator's archive behavior without adding archive rules")
-    func usesCalculatorArchiveBehavior() async throws {
+    @Test("prepares eligible and completed days from an archived habit")
+    func preparesEligibleAndCompletedDaysFromArchivedHabit() async throws {
         let startDay = try day(2026, 8, 18)
         let archiveDay = try day(2026, 8, 19)
         let afterArchiveDay = try day(2026, 8, 20)
@@ -71,10 +82,14 @@ struct LoadHabitStatisticsUseCaseTests {
 
         let statistics = try await useCase.execute(habitID: habit.id)
 
-        #expect(statistics.totalCompletedDays == 2)
-        #expect(statistics.eligibleTrackingDays == 2)
-        #expect(statistics.completionRate == 1)
-        #expect(statistics.streak == HabitStreak(current: 2, longest: 2))
+        #expect(
+            statistics == HabitStatistics(
+                totalCompletedDays: 2,
+                eligibleTrackingDays: 2,
+                completionRate: 1,
+                streak: HabitStreak(current: 2, longest: 2)
+            )
+        )
     }
 
     private let now = Date(timeIntervalSince1970: 1_787_212_800)

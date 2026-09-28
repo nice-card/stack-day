@@ -12,6 +12,9 @@ struct Habit: Equatable, Identifiable {
     private(set) var trackingPeriods: [TrackingPeriod]
     let createdAt: Date
     private(set) var updatedAt: Date
+    var isArchived: Bool {
+        trackingPeriods.isEmpty || trackingPeriods.last?.endedOn != nil
+    }
 
     init(
         id: UUID = UUID(),
@@ -119,8 +122,18 @@ struct Habit: Equatable, Identifiable {
         return trackingPeriods.contains { $0.contains(targetDate) }
     }
 
-    var isArchived: Bool {
-        trackingPeriods.isEmpty || trackingPeriods.last?.endedOn != nil
+    func trackingDays(through referenceDay: LocalDay) throws -> [LocalDay] {
+        var days: [LocalDay] = []
+        for period in trackingPeriods {
+            guard period.startedOn <= referenceDay else { continue }
+            let endDay = min(period.endedOn ?? referenceDay, referenceDay)
+            var day = period.startedOn
+            while day <= endDay {
+                days.append(day)
+                day = try day.addingDays(1)
+            }
+        }
+        return days
     }
 
     private static func validate(periods: [TrackingPeriod]) throws {
